@@ -10,6 +10,8 @@ interface Props {
   supportEmail: string;
   // asks a suggested follow-up; undefined while another answer is streaming
   onAsk?: (question: string) => void;
+  // staff view adds the technical breakdown of how the answer was made
+  staff?: boolean;
 }
 
 // renders model text safely: react escapes everything, and we only recognise
@@ -245,7 +247,7 @@ function Thinking() {
   );
 }
 
-export function Answer({ text, status, result, supportEmail, onAsk }: Props) {
+export function Answer({ text, status, result, supportEmail, onAsk, staff = false }: Props) {
   const [open, setOpen] = useState<number | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | "error" | null>(null);
@@ -331,12 +333,14 @@ export function Answer({ text, status, result, supportEmail, onAsk }: Props) {
           ) : (
             <span className="rate">{feedback === "error" ? "Feedback wasn't saved. The answer may have expired." : "Thanks, noted."}</span>
           )}
-          <button type="button" className="link" onClick={() => setShowDetails((s) => !s)} aria-expanded={showDetails}>
-            {showDetails ? "Hide details" : "How this answer was made"}
-          </button>
+          {staff && (
+            <button type="button" className="link" onClick={() => setShowDetails((s) => !s)} aria-expanded={showDetails}>
+              {showDetails ? "Hide details" : "How this answer was made"}
+            </button>
+          )}
         </div>
       )}
-      {settled && result && showDetails && <Details r={result} />}
+      {settled && result && staff && showDetails && <Details r={result} />}
     </article>
   );
 }

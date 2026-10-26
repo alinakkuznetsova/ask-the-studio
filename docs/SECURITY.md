@@ -61,4 +61,5 @@ Enable in GitHub under **Settings → Code security**: secret scanning and push 
 - **No bot protection.** A public launch would add a challenge (for example Cloudflare Turnstile) in front of the API.
 - **Pattern-based masking is not complete PII detection.** It covers the common cases; names and addresses in free text are not detected.
 - **The model is still the first line against injection.** Code-level checks bound the damage (no tools, verified quotes, masked output, schema), but a subtle injection could still make an answer unhelpful.
+- **Staff view is a display toggle, not access control.** The API returns answer metadata (retrieved passage ids, scores, token counts, cost) to every client and the eval dashboard is reachable by its address. None of it is secret, but in production staff view would sit behind a login and the public API would omit the metadata.
 - **Retrieved content is trusted.** If the knowledge base were editable by customers (reviews, for example), it would become an injection channel and need the same treatment as user input.

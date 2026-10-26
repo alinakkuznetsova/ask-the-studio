@@ -119,6 +119,7 @@ code {
 }
 .bar nav {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
 }
 .bar nav a {
@@ -133,6 +134,45 @@ code {
 .bar nav a:hover,
 .bar nav a[aria-current="page"] {
   border-bottom-color: var(--pale-orange);
+}
+
+/* staff view switch */
+.staff-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border: 0;
+  background: none;
+  color: var(--pale-orange);
+  font-style: italic;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.staff-track {
+  position: relative;
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 226, 166, 0.6);
+  transition: background 0.15s;
+}
+.staff-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--pale-orange);
+  transition: transform 0.15s;
+}
+.staff-toggle[aria-checked="true"] .staff-track {
+  background: rgba(255, 226, 166, 0.25);
+}
+.staff-toggle[aria-checked="true"] .staff-thumb {
+  transform: translateX(13px);
 }
 
 /* ---------- chat ---------- */

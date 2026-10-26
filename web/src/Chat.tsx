@@ -55,7 +55,7 @@ function StopIcon() {
   );
 }
 
-export function Chat() {
+export function Chat({ staff }: { staff: boolean }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -174,6 +174,7 @@ export function Chat() {
                 result={m.result}
                 supportEmail={SUPPORT_EMAIL}
                 onAsk={busy ? undefined : (f) => void send(f)}
+                staff={staff}
               />
             ),
           )}
