@@ -23,4 +23,4 @@ Inspired by the sea and the 17th-century fashion for pearls. MARINE pairs PVD go
 The gold steel can handle a splash, but the pearls can't. Keep MARINE pieces away from water, perfume and creams. See the Pearl Care guide.
 
 ## Buying the set
-The MARINE set includes all five pieces for £235, saving £37 compared with buying them separately (£272). Because sets are discounted, they can only be returned as a complete set, including the earrings.
+The MARINE set includes all five pieces for £235, saving £37 compared with buying them separately (£272). Because sets are discounted, a set can only be returned complete, not piece by piece.

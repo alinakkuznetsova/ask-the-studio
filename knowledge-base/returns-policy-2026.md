@@ -18,7 +18,7 @@ You can return unworn items in their original packaging within 30 days of delive
 Earrings are non-returnable for hygiene reasons. The only exceptions are earrings that arrive damaged or faulty, and earrings bought as part of a complete set (see below). Items from our final sale are not eligible for return.
 
 ## Returning a set
-Sets are sold at a discount, so they can only be returned as a complete set. Return every piece, including the earrings, unworn and in the original packaging, within 30 days of delivery, and we'll refund the set price. We can't accept the return of individual pieces from a set.
+Sets are sold at a discount, so a set can only be returned as a complete set: all five pieces, unworn and in their original packaging, within 30 days of delivery. We'll refund the set price. Pieces from a set can't be returned individually.
 
 ## How to start a return
 Email hello@parurelondon.com with your order number and the items you'd like to return. We'll reply within two working days with your return instructions.

@@ -23,4 +23,4 @@ Sculptural, gold-plated jewellery inspired by 17th-century parures. SOLAR pieces
 All SOLAR pieces come in one size. The ring is UK size O.
 
 ## Buying the set
-The SOLAR set includes all five pieces for £225, saving £25 compared with buying them separately (£250). Because sets are discounted, they can only be returned as a complete set, including the earrings.
+The SOLAR set includes all five pieces for £225, saving £25 compared with buying them separately (£250). Because sets are discounted, a set can only be returned complete, not piece by piece.

@@ -23,4 +23,4 @@ Our first silver-tone collection, inspired by the night sky. LUNAR pieces are po
 Free UK express delivery on all LUNAR orders until 30 November 2026.
 
 ## Buying the set
-The LUNAR set includes all five pieces for £195, saving £36 compared with buying them separately (£231). Because sets are discounted, they can only be returned as a complete set, including the earrings.
+The LUNAR set includes all five pieces for £195, saving £36 compared with buying them separately (£231). Because sets are discounted, a set can only be returned complete, not piece by piece.

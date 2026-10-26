@@ -99,7 +99,7 @@
       "acceptableDocs": ["solar-earrings", "faq"],
       "mustInclude": ["complete set|whole set|full set|entire set|every piece|all five"],
       "mustNotInclude": [],
-      "reference": "Yes, but only by returning the complete set, every piece including the earrings, unworn and in original packaging within 30 days. Earrings bought on their own are non-returnable for hygiene reasons."
+      "reference": "Yes, as long as the complete set is returned, unworn and in its original packaging, within 30 days. Pieces from a set can't be returned individually, and earrings bought on their own are non-returnable for hygiene reasons."
     },
     {
       "id": "m3-partial-set-return",
@@ -110,7 +110,7 @@
       "acceptableDocs": ["lunar-crescent-earrings", "faq"],
       "mustInclude": ["can't|cannot|not able|unable|only|isn't possible|not possible"],
       "mustNotInclude": ["yes, you can return just"],
-      "reference": "No. Sets can only be returned complete; individual pieces from a set can't be returned, and earrings are otherwise non-returnable for hygiene reasons."
+      "reference": "No. A set can only be returned complete, not piece by piece, so the earrings can't be sent back on their own."
     },
     {
       "id": "m4-pearl-shower-clean",
