@@ -104,6 +104,15 @@ describe("ask pipeline", () => {
     expect(r.answer).toContain("hello@parurelondon.com");
   });
 
+  it("does not repeat the contact line when the answer already gives the email", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "Returns are accepted within 30 days."], [null, "Email hello@parurelondon.com for engraving."]], [[s, "within 30 days of delivery"]], true);
+    });
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answer.match(/hello@parurelondon\.com/g)).toHaveLength(1);
+  });
+
   it("tells the model today's date so time-limited offers can be applied", async () => {
     const chat = new FakeChat(() => declined("not_in_sources"));
     await ask("Is express delivery free on LUNAR?", { retriever, chat }, { now: new Date("2026-10-26T12:00:00Z") });

@@ -186,7 +186,9 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   const sentencesCited = parts.filter((x) => x.labels.length > 0).length;
   const display = rewriteMarkers(joinSentences(parts), validLabels);
   const { order } = display;
-  const text = parsed.partial ? `${display.text}\n\n${PARTIAL_LINE}` : display.text;
+  // add the contact line unless the answer already gives the email
+  const needsContact = parsed.partial && !display.text.includes(settings.supportEmail);
+  const text = needsContact ? `${display.text}\n\n${PARTIAL_LINE}` : display.text;
   // sources cited with a quote but not marked inline still get listed, after the inline ones
   for (const v of valid) if (!order.includes(v.source)) order.push(v.source);
 
