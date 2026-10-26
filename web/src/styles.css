@@ -922,6 +922,149 @@ code {
   overflow-wrap: anywhere;
 }
 
+/* ---------- labelling ---------- */
+
+.run-meta a {
+  color: var(--dark-red);
+}
+.label-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  color: var(--red-50);
+}
+.label-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--product);
+  overflow: hidden;
+}
+.label-bar span {
+  display: block;
+  height: 100%;
+  background: var(--dark-red);
+  transition: width 0.2s;
+}
+.label-card {
+  padding: 1.5rem;
+  border: 1px solid var(--product);
+  border-radius: 16px;
+  background: var(--white);
+}
+.label-card h2 {
+  margin: 1.5rem 0 0.4rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--red-50);
+}
+.label-meta {
+  margin: 0 0 0.75rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--red-50);
+}
+.label-card .q-row {
+  margin: 0;
+}
+.label-answer,
+.label-ref {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.label-ref {
+  color: var(--red-50);
+  font-style: italic;
+}
+.label-sources {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+}
+.label-sources summary {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  color: var(--dark-red);
+  cursor: pointer;
+}
+.label-src-title {
+  margin: 0.75rem 0 0.25rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--red-50);
+}
+.label-src-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.label-qs {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--product);
+}
+.label-q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--product);
+}
+.label-q-title {
+  margin: 0;
+}
+.label-q-help {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--red-50);
+}
+.yesno {
+  flex: none;
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--product);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+}
+.yesno button {
+  padding: 0.3rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.yesno button.is-on {
+  background: var(--dark-red);
+  color: var(--pale-orange);
+}
+.label-note {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+}
+.label-note input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--product);
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 0.875rem;
+}
+.label-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+.label-nav .link:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ---------- small screens ---------- */
 
 @media (max-width: 40rem) {

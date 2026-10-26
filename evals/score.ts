@@ -35,6 +35,7 @@ export interface CaseResult {
   category: EvalCase["category"];
   question: string;
   expect: EvalCase["expect"];
+  reference: string;
   answer: string;
   answerable: boolean;
   declineReason?: string;
@@ -56,6 +57,9 @@ export interface CaseResult {
   followUps: string[];
   // how many suggested follow-ups got a real answer when actually asked
   followUpsAnswered: number | null;
+  // full text of each cited passage, in source order, as the judge saw it.
+  // kept so a person can label the same answers (see web/src/Label.tsx)
+  cited: { title: string; text: string }[];
   error?: string;
 }
 
@@ -130,6 +134,7 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     category: c.category,
     question: c.question,
     expect: c.expect,
+    reference: c.reference,
     answer: r.answer,
     answerable: r.answerable,
     declineReason: r.declineReason,
@@ -149,6 +154,7 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     retrieved: r.meta.retrieved.map((x) => x.chunkId),
     followUps: r.followUps,
     followUpsAnswered: null,
+    cited: [],
   };
 }
 

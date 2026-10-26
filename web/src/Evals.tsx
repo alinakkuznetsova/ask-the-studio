@@ -100,7 +100,7 @@ export function Evals() {
       </p>
       <p className="run-meta">
         Last run {new Date(report.runAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}, chat model {report.models.chat},
-        judged by {report.models.judge}, prompt {report.promptVersion}.
+        judged by {report.models.judge}, prompt {report.promptVersion}. <a href="#/label">Check the judge against your own labels</a>
       </p>
 
       <section aria-labelledby="results-title">

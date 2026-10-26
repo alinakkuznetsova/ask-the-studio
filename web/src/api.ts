@@ -135,6 +135,9 @@ export interface EvalCaseResult {
   category: string;
   question: string;
   expect: string;
+  // older reports were saved before these two fields existed
+  reference?: string;
+  cited?: { title: string; text: string }[];
   answer: string;
   answerable: boolean;
   declineReason?: string;

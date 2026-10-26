@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Chat } from "./Chat";
 import { Evals } from "./Evals";
+import { LabelPage } from "./Label";
 
-type Page = "ask" | "evals";
+type Page = "ask" | "evals" | "label";
 
-// hash routing: two pages do not justify a router dependency, and the
+// hash routing: three pages do not justify a router dependency, and the
 // server only has to serve one index.html
-const pageFromHash = (): Page => (location.hash === "#/evals" ? "evals" : "ask");
+const pageFromHash = (): Page => (location.hash === "#/evals" ? "evals" : location.hash === "#/label" ? "label" : "ask");
 
 // staff view shows how each answer was made and the eval dashboard.
 // remembered per browser; storage can be blocked, so failures are ignored.
@@ -46,7 +47,7 @@ export function App() {
     setStaff(next);
     writeStaff(next);
     // leaving staff view on the dashboard takes you back to the chat
-    if (!next && page === "evals") location.hash = "#/";
+    if (!next && page !== "ask") location.hash = "#/";
   };
 
   useEffect(() => {
@@ -56,7 +57,8 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    document.title = page === "evals" ? "How it's tested · Ask the Studio" : "Ask the Studio · Parure London";
+    document.title =
+      page === "evals" ? "How it's tested · Ask the Studio" : page === "label" ? "Check the judge · Ask the Studio" : "Ask the Studio · Parure London";
   }, [page]);
 
   return (
@@ -77,7 +79,7 @@ export function App() {
               <a href="#/" aria-current={page === "ask" ? "page" : undefined} onClick={goHome}>
                 Ask
               </a>
-              <a href="#/evals" aria-current={page === "evals" ? "page" : undefined}>
+              <a href="#/evals" aria-current={page !== "ask" ? "page" : undefined}>
                 How it's tested
               </a>
             </>
@@ -90,7 +92,7 @@ export function App() {
           </button>
         </nav>
       </header>
-      {page === "ask" ? <Chat key={chatKey} staff={staff} /> : <Evals />}
+      {page === "ask" ? <Chat key={chatKey} staff={staff} /> : page === "label" ? <LabelPage /> : <Evals />}
     </>
   );
 }

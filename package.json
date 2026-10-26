@@ -17,6 +17,7 @@
     "eval": "tsx evals/run.ts",
     "eval:baseline": "tsx evals/run.ts --variant baseline",
     "eval:counterfactual": "tsx evals/counterfactual.ts",
+    "eval:agreement": "tsx evals/agreement.ts",
     "feedback:export": "tsx scripts/feedback-to-evals.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

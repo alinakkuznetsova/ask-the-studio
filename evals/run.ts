@@ -56,17 +56,14 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
       () => ask(c.question, { retriever, chat }, { history: c.history, now: new Date(`${dataset.asOf}T12:00:00Z`) }),
     );
     let j = null;
+    const cited = r.sources.map((s) => ({ title: `${s.title} > ${s.section}`, text: chunkById.get(s.chunkId)?.text ?? "" }));
     if (r.answerable) {
-      const res = await judge(judgeModel, {
-        question: c.question,
-        reference: c.reference,
-        answer: r.answer,
-        sources: r.sources.map((s) => ({ title: `${s.title} > ${s.section}`, text: chunkById.get(s.chunkId)?.text ?? "" })),
-      });
+      const res = await judge(judgeModel, { question: c.question, reference: c.reference, answer: r.answer, sources: cited });
       judgeCost += costUsd(cfg.JUDGE_MODEL, res.usage.input, res.usage.output) ?? 0;
       j = { correctness: res.correctness, grounded: res.grounded, focused: res.focused, reason: res.reason };
     }
     const scored = scoreCase(c, r, j);
+    scored.cited = cited;
     // ask each suggested follow-up for real: a suggestion the assistant
     // then declines would look broken, so this is measured, not assumed
     if (r.followUps.length && !flag("no-follow-ups")) {
@@ -90,10 +87,10 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return {
-      id: c.id, category: c.category, question: c.question, expect: c.expect, answer: "", answerable: false,
+      id: c.id, category: c.category, question: c.question, expect: c.expect, reference: c.reference, answer: "", answerable: false,
       retrievalRecall: null, declineCorrect: false, factsPass: false, factFailures: [], citationPrecision: null,
       quoteVerification: null, sentenceCoverage: null, judge: null, followUps: [], followUpsAnswered: null, pass: false, latencyMs: 0, costUsd: null, tokens: { input: 0, output: 0 },
-      sources: [], retrieved: [], error: message,
+      sources: [], retrieved: [], cited: [], error: message,
     };
   }
 }
