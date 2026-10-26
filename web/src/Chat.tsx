@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { askStream, type AskResult, type Turn } from "./api";
 import { Answer, type AnswerStatus } from "./Answer";
 
@@ -13,31 +13,66 @@ interface Message {
   result?: AskResult;
 }
 
-// customers usually arrive with a specific question, so the home screen is
-// an input first. the topics help people who don't know where to start, and
-// the placeholder cycles through real examples of what can be asked
+// the page opens as a conversation: the studio says hello, with a few topics
+// for people who don't know where to start, and the box at the bottom types
+// out examples of what can be asked
 const TOPICS = [
   { label: "Returns", question: "How do returns work?" },
   { label: "Delivery", question: "How does delivery work and how long does it take?" },
   { label: "Caring for your jewellery", question: "How should I care for my jewellery?" },
+  { label: "Choosing a gift", question: "I'm buying a gift. How do I choose between the collections?" },
 ];
 
 const EXAMPLES = [
-  "Is the silver hypoallergenic?",
   "Can I wear the rings in the shower?",
+  "Is the silver hypoallergenic?",
   "How do I return a gift?",
   "How much do I save buying the MARINE set?",
 ];
+const STILL_PLACEHOLDER = "Ask about a piece, an order or a policy";
 
-// swaps the example every few seconds while the box is empty
-function useRotatingExample(active: boolean): string {
-  const [i, setI] = useState(0);
+// types an example out letter by letter, holds it, clears it and moves to
+// the next. only runs while the box is empty and not focused, and never for
+// people who have asked their system for reduced motion
+function useTypedExample(active: boolean): string {
+  const [text, setText] = useState("");
   useEffect(() => {
-    if (!active || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = setInterval(() => setI((n) => (n + 1) % EXAMPLES.length), 3500);
-    return () => clearInterval(t);
+    if (!active) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setText(EXAMPLES[0]!);
+      return;
+    }
+    let i = 0;
+    let n = 0;
+    let erasing = false;
+    let timer: number;
+    const tick = () => {
+      const target = EXAMPLES[i]!;
+      if (!erasing) {
+        n++;
+        setText(target.slice(0, n));
+        if (n === target.length) {
+          erasing = true;
+          timer = window.setTimeout(tick, 1800);
+          return;
+        }
+        timer = window.setTimeout(tick, 45 + Math.random() * 40);
+      } else {
+        n = Math.max(0, n - 3);
+        setText(target.slice(0, n));
+        if (n === 0) {
+          erasing = false;
+          i = (i + 1) % EXAMPLES.length;
+          timer = window.setTimeout(tick, 400);
+          return;
+        }
+        timer = window.setTimeout(tick, 20);
+      }
+    };
+    timer = window.setTimeout(tick, 600);
+    return () => window.clearTimeout(timer);
   }, [active]);
-  return EXAMPLES[i]!;
+  return active ? text : STILL_PLACEHOLDER;
 }
 
 let counter = 0;
@@ -72,12 +107,17 @@ export function Chat({ staff }: { staff: boolean }) {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const lastTurnRef = useRef<HTMLDivElement>(null);
+  const [focused, setFocused] = useState(false);
+  const turnCount = Math.ceil(messages.length / 2);
 
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [messages]);
+  // when a question is sent, bring it to the top of the screen and let the
+  // answer write itself in underneath. no scrolling while it streams, so
+  // reading or scrolling back is never fought
+  useLayoutEffect(() => {
+    if (turnCount > 0) lastTurnRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [turnCount]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -137,12 +177,12 @@ export function Chat({ staff }: { staff: boolean }) {
   }
 
   const home = messages.length === 0;
-  const example = useRotatingExample(home && !draft);
+  const placeholder = useTypedExample(home && !draft && !focused);
   const over = draft.length > MAX_CHARS;
   const nearLimit = draft.length > MAX_CHARS - 100;
 
   const composer = (
-    <form className={`composer${home ? " is-home" : ""}`} onSubmit={onSubmit}>
+    <form className="composer" onSubmit={onSubmit}>
       <div className={`composer-box${over ? " is-over" : ""}`}>
         <label htmlFor="question" className="sr-only">
           Your question
@@ -154,10 +194,11 @@ export function Chat({ staff }: { staff: boolean }) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder={home ? example : "Ask a follow-up"}
+          placeholder={home ? placeholder : "Ask a follow-up"}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           aria-invalid={over}
           aria-describedby="composer-help"
-          autoFocus
         />
         {busy ? (
           <button type="button" className="icon-btn" onClick={stop} aria-label="Stop answering">
@@ -187,47 +228,46 @@ export function Chat({ staff }: { staff: boolean }) {
     </form>
   );
 
+  // messages come in question and answer pairs; each pair is one turn
+  const turns: [Message, Message | undefined][] = [];
+  for (let i = 0; i < messages.length; i += 2) turns.push([messages[i]!, messages[i + 1]]);
+
   return (
     <main className="chat">
-      {home ? (
-        <section className="intro" aria-labelledby="intro-title">
-          <h1 id="intro-title">How can we help?</h1>
-          <p className="lede">Ask about a piece, delivery, returns or care. Answers come from Parure's own guides and policies.</p>
-          {composer}
-          <ul className="topics" aria-label="Popular topics">
-            {TOPICS.map((t) => (
-              <li key={t.label}>
-                <button type="button" className="pill topic" onClick={() => void send(t.question)}>
-                  {t.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : (
-        <section className="thread" aria-live="polite" aria-busy={busy}>
-          {messages.map((m) =>
-            m.role === "user" ? (
-              <div key={m.id} className="q-row">
-                <p className="q">{m.text}</p>
-              </div>
-            ) : (
+      <section className="thread" aria-live="polite" aria-busy={busy}>
+        <article className="a greeting">
+          <p>Hello, and welcome to Parure. Ask us anything about our pieces, delivery, returns or caring for your jewellery.</p>
+          {home && (
+            <ul className="chips" aria-label="Popular topics">
+              {TOPICS.map((t) => (
+                <li key={t.label}>
+                  <button type="button" className="chip" onClick={() => void send(t.question)}>
+                    {t.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </article>
+        {turns.map(([q, a], i) => (
+          <div key={q.id} className={`turn${i === turns.length - 1 ? " is-last" : ""}`} ref={i === turns.length - 1 ? lastTurnRef : undefined}>
+            <div className="q-row">
+              <p className="q">{q.text}</p>
+            </div>
+            {a && (
               <Answer
-                key={m.id}
-                text={m.text}
-                status={m.status}
-                result={m.result}
+                text={a.text}
+                status={a.status}
+                result={a.result}
                 supportEmail={SUPPORT_EMAIL}
                 onAsk={busy ? undefined : (f) => void send(f)}
                 staff={staff}
               />
-            ),
-          )}
-          <div ref={endRef} />
-        </section>
-      )}
-
-      {!home && composer}
+            )}
+          </div>
+        ))}
+      </section>
+      {composer}
     </main>
   );
 }

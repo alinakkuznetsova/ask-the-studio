@@ -189,7 +189,6 @@ code {
   flex-direction: column;
 }
 
-.intro,
 .thread {
   width: 100%;
   max-width: var(--measure);
@@ -198,42 +197,24 @@ code {
   flex: 1;
 }
 
-/* home: a centred question box, like a search page */
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding-bottom: 12vh;
+/* the studio's greeting opens every conversation */
+.greeting p {
+  margin: 0;
 }
-.intro h1 {
-  margin: 0 0 0.5rem;
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(2rem, 5vw, 2.75rem);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--dark-red);
+.greeting .chips {
+  margin-top: 1.25rem;
 }
-.lede {
-  margin: 0 0 2rem;
-  max-width: 30rem;
-  color: var(--red-50);
+
+/* a question and its answer. the latest turn is at least a screen tall, so
+   a new question can scroll to the top with room for the answer below it */
+.turn {
+  margin-top: 2.25rem;
+  scroll-margin-top: calc(var(--bar-h) + 1.5rem);
 }
-.topics {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
+.turn.is-last {
+  min-height: calc(100dvh - var(--bar-h) - 10rem);
 }
-.pill.topic {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.8125rem;
-}
+
 .follow-ups h3 {
   margin: 2rem 0 0.75rem;
   font-size: 0.875rem;
@@ -378,11 +359,6 @@ code {
   margin-top: 1.5rem;
 }
 
-.is-declined .a-body {
-  font-style: italic;
-  padding-left: 1rem;
-  border-left: 2px solid var(--pale-orange);
-}
 .is-error p {
   margin: 0;
   font-style: italic;
@@ -666,13 +642,7 @@ code {
   max-width: var(--measure);
   margin: 0 auto;
 }
-.composer.is-home {
-  position: static;
-  width: 100%;
-  padding: 0;
-  background: none;
-  text-align: left;
-}
+
 .composer-box {
   display: flex;
   align-items: flex-end;
