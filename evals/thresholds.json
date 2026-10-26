@@ -1,0 +1,12 @@
+{
+  "min": {
+    "passRate": 0.85,
+    "retrievalRecall": 0.9,
+    "declineAccuracy": 0.9,
+    "groundedness": 0.9,
+    "quoteVerification": 0.9
+  },
+  "max": {
+    "falseAnswers": 0
+  }
+}
