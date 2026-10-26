@@ -206,9 +206,12 @@ function useSmoothText(target: string): { text: string; typing: boolean } {
     frame.current = requestAnimationFrame(step);
   }, [target]);
 
+  // stop on unmount. frame must be reset too: in development react mounts
+  // components twice, and a stale frame id would stop typing ever starting
   useEffect(
     () => () => {
       if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current = null;
     },
     [],
   );
