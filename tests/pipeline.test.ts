@@ -112,6 +112,15 @@ describe("ask pipeline", () => {
     expect(r.answer).toContain(PARTIAL_LINE);
   });
 
+  it("adds the contact line when an answer says there is no mention of something", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "There is no mention of engraving."]], [[s, "within 30 days of delivery"]]);
+    });
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answer).toContain(PARTIAL_LINE);
+  });
+
   it("reports an answer cut off by the token limit as too long", async () => {
     const chat = new FakeChat(() => '{"answerable":true,"sentences":[{"sources":["S1"],"text":"You can', "q", true);
     const r = await ask(Q, { retriever, chat });
