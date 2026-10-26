@@ -65,6 +65,7 @@ export interface AskMeta {
   droppedCitations: number;
   sentencesTotal: number;
   sentencesCited: number; // sentences with at least one verified source
+  langfuseTraceId?: string; // set when tracing is on, to attach scores
 }
 
 export interface AskResult {

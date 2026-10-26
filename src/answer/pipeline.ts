@@ -18,6 +18,8 @@ import {
 import { joinSentences, MarkerRewriter, rewriteMarkers, SentenceStreamer } from "./stream-parse.js";
 import { leaksPrompt, validateCitations } from "./validate.js";
 import { redactAnswer, StreamRedactor } from "./safety.js";
+import { startActiveObservation } from "@langfuse/tracing";
+import { generation, step, tracingEnabled } from "../observability/tracing.js";
 
 const ModelOutput = z.object({
   answerable: z.boolean(),
@@ -79,7 +81,37 @@ export function cleanFollowUps(raw: string[], question: string): string[] {
   return out;
 }
 
+// one trace per question when tracing is on (see observability/tracing.ts)
 export async function ask(question: string, deps: PipelineDeps, opts: AskOptions = {}): Promise<AskResult> {
+  return startActiveObservation("ask", async (root) => {
+    root.update({ input: { question, historyTurns: opts.history?.length ?? 0 } });
+    try {
+      const result = await askSteps(question, deps, opts);
+      root.update({
+        output: {
+          answer: result.answer,
+          answerable: result.answerable,
+          declineReason: result.declineReason,
+          sources: result.sources.map((x) => x.chunkId),
+        },
+        metadata: {
+          traceId: result.meta.traceId,
+          promptVersion: result.meta.promptVersion,
+          costUsd: result.meta.costUsd,
+          latencyMs: result.meta.latencyMs,
+          droppedCitations: result.meta.droppedCitations,
+        },
+      });
+      if (tracingEnabled()) result.meta.langfuseTraceId = root.traceId;
+      return result;
+    } catch (err) {
+      root.update({ level: "ERROR", statusMessage: err instanceof Error ? err.message : String(err) });
+      throw err;
+    }
+  });
+}
+
+async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions): Promise<AskResult> {
   const t0 = performance.now();
   const traceId = opts.traceId ?? crypto.randomUUID();
   const usage: Usage = { input: 0, output: 0 };
@@ -98,6 +130,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   let rewritten: string | undefined;
   const tRewrite = performance.now();
   if (history.length) {
+    const rw = generation("rewrite follow-up", deps.chat.model, { question: q, history });
     const res = await deps.chat.complete(
       [
         { role: "system", content: REWRITE_PROMPT },
@@ -107,6 +140,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
       opts.signal,
     );
     addUsage(res.usage);
+    rw.end(res.text, res.usage);
     const r = cleanInput(res.text).slice(0, settings.maxQuestionChars);
     if (r) searchQuery = rewritten = r;
   }
@@ -114,7 +148,15 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
 
   // 2. retrieve
   const tRetrieve = performance.now();
+  const rs = step("retrieve", "retriever", { query: searchQuery });
   const { results, bestSimilarity, archived } = await deps.retriever.search(searchQuery);
+  rs.end(
+    {
+      current: results.map((r) => ({ chunk: r.chunk.id, fused: r.score, similarity: r.vectorScore, bm25: r.bm25Score })),
+      archived: archived.map((c) => c.id),
+    },
+    { bestSimilarity },
+  );
   const retrieveMs = performance.now() - tRetrieve;
 
   interface Stats {
@@ -165,11 +207,15 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   // masks personal data in the stream before it is shown (see safety.ts)
   const guard = new StreamRedactor();
   const markers = new MarkerRewriter(new Set(labels.keys()));
-  const gen = await deps.chat.streamJson(
-    [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserMessage(q, results, archived, history, formatToday(opts.now ?? new Date())) },
-    ],
+  const messages = [
+    { role: "system" as const, content: SYSTEM_PROMPT },
+    { role: "user" as const, content: buildUserMessage(q, results, archived, history, formatToday(opts.now ?? new Date())) },
+  ];
+  const gt = generation("generate answer", deps.chat.model, messages);
+  let gen: Awaited<ReturnType<ChatModel["streamJson"]>>;
+  try {
+    gen = await deps.chat.streamJson(
+    messages,
     { name: "grounded_answer", schema: ANSWER_SCHEMA },
     settings.maxAnswerTokens,
     (delta) => {
@@ -181,6 +227,11 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     },
     opts.signal,
   );
+  } catch (err) {
+    gt.fail(err);
+    throw err;
+  }
+  gt.end(gen.text, gen.usage, { promptVersion: PROMPT_VERSION });
   if (opts.onDelta) {
     const rest = guard.push(markers.flush()) + guard.flush();
     if (rest) opts.onDelta(rest);
@@ -202,7 +253,9 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   }
 
   const sourceText = new Map([...labels].map(([label, v]) => [label, v.chunk.text]));
+  const vt = step("verify citations", "guardrail", { citations: parsed.citations });
   const { valid, dropped, checked } = validateCitations(parsed.citations, sourceText);
+  vt.end({ verified: valid, dropped }, { checked });
   // an answer must be backed by at least one verified quote from a current source
   if (!valid.some((v) => !labels.get(v.source)!.archived)) return decline("unverified", generateMs, { dropped, checked });
 

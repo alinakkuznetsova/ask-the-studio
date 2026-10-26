@@ -7,9 +7,14 @@ import { buildIndex, openaiClient } from "./kb/build.js";
 import { OpenAIChat } from "./answer/llm.js";
 import { createApp } from "./server/app.js";
 import { log } from "./server/logger.js";
+import { initTracing, shutdownTracing } from "./observability/tracing.js";
 
 const cfg = env();
 const t0 = Date.now();
+
+// before anything else, so every request is traced when keys are set
+const tracing = initTracing(cfg.NODE_ENV);
+log("info", "tracing", { langfuse: tracing });
 
 // ingest at startup: 31 docs embed in about a second, and the cache makes
 // restarts nearly free. a large kb would ingest offline into a vector db.
@@ -48,7 +53,8 @@ const server = serve({ fetch: app.fetch, port: cfg.PORT, hostname: "0.0.0.0" }, 
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, () => {
     log("info", "shutdown", { signal: sig });
-    server.close(() => process.exit(0));
+    // send buffered traces, then stop accepting requests
+    void shutdownTracing().finally(() => server.close(() => process.exit(0)));
     setTimeout(() => process.exit(0), 10_000).unref();
   });
 }

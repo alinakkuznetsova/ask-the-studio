@@ -26,6 +26,11 @@ const EnvSchema = z.object({
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(10),
   DAILY_REQUEST_CAP: z.coerce.number().int().positive().default(1000),
   NODE_ENV: z.string().default("development"),
+  // optional langfuse tracing; off unless both keys are set
+  LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
+  LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
+  LANGFUSE_BASE_URL: z.string().url().optional(),
+  LANGFUSE_HOST: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
