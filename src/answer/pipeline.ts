@@ -48,9 +48,16 @@ export function formatToday(d: Date): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/London" });
 }
 
-// strip control characters (keeps newlines and tabs) and trim
+// normalises unicode (so look-alike characters compare equal), strips
+// control characters (keeping newlines and tabs) and invisible formatting
+// characters (zero-width and bidirectional overrides), which can hide
+// instructions from filters and from a human reading the logs
 export function cleanInput(s: string): string {
-  return s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").trim();
+  return s
+    .normalize("NFKC")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g, "")
+    .trim();
 }
 
 export async function ask(question: string, deps: PipelineDeps, opts: AskOptions = {}): Promise<AskResult> {
