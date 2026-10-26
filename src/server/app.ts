@@ -192,14 +192,22 @@ export function createApp(opts: AppOptions) {
     return streamSSE(c, async (stream) => {
       stream.onAbort(() => controller.abort());
       try {
+        // the answer goes out as soon as it is verified ("result"); the
+        // follow-up suggestions are made afterwards and sent as "followups"
+        let sent = false;
         const result = await ask(admitted.body.question, opts.deps, {
           history: admitted.body.history,
           signal: controller.signal,
           traceId,
           onDelta: (text) => void stream.writeSSE({ event: "delta", data: JSON.stringify({ text }) }),
+          onAnswer: async (answer) => {
+            sent = true;
+            await stream.writeSSE({ event: "result", data: JSON.stringify(answer) });
+          },
         });
         record(result, admitted.body.question);
-        await stream.writeSSE({ event: "result", data: JSON.stringify(result) });
+        if (!sent) await stream.writeSSE({ event: "result", data: JSON.stringify(result) });
+        else await stream.writeSSE({ event: "followups", data: JSON.stringify({ followUps: result.followUps, meta: result.meta }) });
       } catch (err) {
         if (!controller.signal.aborted) {
           log("error", "ask_failed", { traceId, error: err instanceof Error ? err.message : String(err) });

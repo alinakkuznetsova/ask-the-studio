@@ -136,7 +136,14 @@ export function Chat({ staff }: { staff: boolean }) {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const result = await askStream(q, history, (d) => update(botMsg.id, (m) => ({ text: m.text + d })), controller.signal);
+      const result = await askStream(
+        q,
+        history,
+        (d) => update(botMsg.id, (m) => ({ text: m.text + d })),
+        controller.signal,
+        // show the verified answer straight away; suggestions arrive after
+        (answer) => update(botMsg.id, { text: answer.answer, result: answer, status: "done" }),
+      );
       // the final text replaces the streamed text: unverified citations are
       // removed server side, and declines use the app's own wording
       update(botMsg.id, { text: result.answer, result, status: "done" });

@@ -55,12 +55,14 @@ describe("server", () => {
     expect((await post(app, "/ask", { question: "returns" }, { "x-forwarded-for": "5.6.7.8" })).status).toBe(200);
   });
 
-  it("streams deltas then a final result", async () => {
+  it("streams deltas, then the answer, then follow-up suggestions", async () => {
     const res = await post(mk(), "/ask/stream", { question: "returns window days" });
     const text = await res.text();
     expect(text).toContain("event: delta");
     expect(text).toContain("event: result");
     expect(text.indexOf("event: delta")).toBeLessThan(text.indexOf("event: result"));
+    // suggestions are made after the answer is sent
+    expect(text.indexOf("event: result")).toBeLessThan(text.indexOf("event: followups"));
   });
 
   it("only accepts feedback for answers it gave", async () => {

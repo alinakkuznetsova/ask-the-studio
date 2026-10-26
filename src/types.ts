@@ -56,7 +56,7 @@ export interface AskMeta {
   traceId: string;
   model: string;
   promptVersion: string;
-  latencyMs: { rewrite: number; retrieve: number; generate: number; total: number };
+  latencyMs: { rewrite: number; retrieve: number; generate: number; followUps?: number; total: number };
   tokens: { input: number; output: number };
   costUsd: number | null;
   rewrittenQuestion?: string;

@@ -121,6 +121,34 @@ describe("ask pipeline", () => {
     expect(r.answer).toContain(PARTIAL_LINE);
   });
 
+  it("suggests follow-ups in a second call, after the answer is ready", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "You have 30 days."]], [[s, "within 30 days of delivery"]]);
+    });
+    chat.followUps = ["How do I start a return?", "<b>bad</b>?"];
+    let early: string[] | undefined;
+    const r = await ask(Q, { retriever, chat }, { onAnswer: (a) => void (early = a.followUps) });
+    expect(early).toEqual([]);
+    expect(r.followUps).toEqual(["How do I start a return?"]);
+    expect(r.meta.latencyMs.followUps).toBeGreaterThanOrEqual(0);
+  });
+
+  it("keeps the answer when the follow-up call fails", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "You have 30 days."]], [[s, "within 30 days of delivery"]]);
+    });
+    const orig = chat.streamJson.bind(chat);
+    chat.streamJson = async (msgs, schema, max, onDelta) => {
+      if (schema.name === "follow_ups") throw new Error("upstream down");
+      return orig(msgs, schema, max, onDelta);
+    };
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answerable).toBe(true);
+    expect(r.followUps).toEqual([]);
+  });
+
   it("reports an answer cut off by the token limit as too long", async () => {
     const chat = new FakeChat(() => '{"answerable":true,"sentences":[{"sources":["S1"],"text":"You can', "q", true);
     const r = await ask(Q, { retriever, chat });

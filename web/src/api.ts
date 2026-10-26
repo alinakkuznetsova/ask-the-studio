@@ -22,7 +22,7 @@ export interface AskResult {
     traceId: string;
     model: string;
     promptVersion: string;
-    latencyMs: { rewrite: number; retrieve: number; generate: number; total: number };
+    latencyMs: { rewrite: number; retrieve: number; generate: number; followUps?: number; total: number };
     tokens: { input: number; output: number };
     costUsd: number | null;
     rewrittenQuestion?: string;
@@ -57,6 +57,8 @@ export async function askStream(
   history: Turn[],
   onDelta: (text: string) => void,
   signal: AbortSignal,
+  // called when the verified answer arrives; follow-up suggestions come after
+  onAnswer?: (result: AskResult) => void,
 ): Promise<AskResult> {
   const res = await fetch("/ask/stream", {
     method: "POST",
@@ -85,7 +87,14 @@ export async function askStream(
       }
       const payload = JSON.parse(data.join("\n"));
       if (event === "delta") onDelta(payload.text);
-      else if (event === "result") result = payload as AskResult;
+      else if (event === "result") {
+        result = payload as AskResult;
+        onAnswer?.(result);
+      } else if (event === "followups" && result) {
+        const extra = payload as Pick<AskResult, "followUps" | "meta">;
+        const answer: AskResult = result;
+        result = { ...answer, followUps: extra.followUps, meta: extra.meta };
+      }
       else if (event === "error") throw new ApiError(payload.message);
     }
   }

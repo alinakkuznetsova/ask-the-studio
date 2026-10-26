@@ -10,6 +10,8 @@ import { DEFAULT_RETRIEVAL } from "../src/kb/build.js";
 export class FakeChat implements ChatModel {
   readonly model = "gpt-4.1-mini";
   calls: ChatMessage[][] = [];
+  // returned by the separate follow-up call, which is not recorded in calls
+  followUps: string[] = [];
   constructor(
     private output: (messages: ChatMessage[]) => object | string,
     private rewrite = "rewritten question",
@@ -19,7 +21,8 @@ export class FakeChat implements ChatModel {
     this.calls.push(messages);
     return { text: this.rewrite, usage: { input: 50, output: 10 } as Usage };
   }
-  async streamJson(messages: ChatMessage[], _s: unknown, _m: number, onDelta: (d: string) => void) {
+  async streamJson(messages: ChatMessage[], schema: { name: string }, _m: number, onDelta: (d: string) => void) {
+    if (schema.name === "follow_ups") return { text: JSON.stringify({ follow_ups: this.followUps }), usage: { input: 200, output: 20 } as Usage };
     this.calls.push(messages);
     const out = this.output(messages);
     const text = typeof out === "string" ? out : JSON.stringify(out);
@@ -47,16 +50,14 @@ export function cited(
   sentences: [label: string | null, text: string][],
   quotes: [label: string, quote: string][],
   partial = false,
-  followUps: string[] = [],
 ) {
   return {
     answerable: true,
     decline_type: "none",
     partial,
     sentences: sentences.map(([l, text]) => ({ sources: l ? [l] : [], text })),
-    follow_ups: followUps,
     citations: quotes.map(([source, quote]) => ({ source, quote })),
   };
 }
 
-export const declined = (type: "off_topic" | "not_in_sources") => ({ answerable: false, decline_type: type, partial: false, sentences: [], follow_ups: [], citations: [] });
+export const declined = (type: "off_topic" | "not_in_sources") => ({ answerable: false, decline_type: type, partial: false, sentences: [], citations: [] });

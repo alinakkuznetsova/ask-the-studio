@@ -8,7 +8,10 @@ import {
   ANSWER_SCHEMA,
   buildRewriteMessage,
   buildUserMessage,
+  buildFollowUpMessage,
   DECLINES,
+  FOLLOW_UP_PROMPT,
+  FOLLOW_UP_SCHEMA,
   PARTIAL_LINE,
   PROMPT_VERSION,
   REWRITE_PROMPT,
@@ -26,7 +29,6 @@ const ModelOutput = z.object({
   decline_type: z.enum(["none", "not_in_sources", "off_topic"]),
   partial: z.boolean(),
   sentences: z.array(z.object({ sources: z.array(z.string()), text: z.string() })),
-  follow_ups: z.array(z.string()),
   citations: z.array(z.object({ source: z.string(), quote: z.string() })),
 });
 
@@ -44,6 +46,9 @@ export interface AskOptions {
   traceId?: string;
   // the date used for offers and deadlines; injectable so tests are stable
   now?: Date;
+  // called with the finished answer before follow-up suggestions are made,
+  // so the ui can show it straight away; the suggestions follow
+  onAnswer?: (result: AskResult) => void | Promise<void>;
 }
 
 // e.g. "26 October 2026", in the brand's own time zone
@@ -293,10 +298,40 @@ async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions):
     };
   });
 
-  return finish({ answer: text, answerable: true, sources, followUps: cleanFollowUps(parsed.follow_ups, q) }, generateMs, {
+  const answered = finish({ answer: text, answerable: true, sources, followUps: [] }, generateMs, {
     dropped,
     checked,
     sentencesTotal: parts.length,
     sentencesCited,
   });
+  await opts.onAnswer?.(structuredClone(answered));
+
+  // 6. follow-up suggestions, made with the finished answer in view. they
+  // are optional, so a failure here never costs the customer their answer
+  const tFollow = performance.now();
+  const earlier = history.filter((t) => t.role === "user").map((t) => t.content);
+  const fg = generation("suggest follow-ups", deps.chat.model, { question: q, answer: text });
+  try {
+    const res = await deps.chat.streamJson(
+      [
+        { role: "system", content: FOLLOW_UP_PROMPT },
+        { role: "user", content: buildFollowUpMessage(rewritten ?? q, text.replace(/\[\d+\]/g, ""), earlier, results) },
+      ],
+      { name: "follow_ups", schema: FOLLOW_UP_SCHEMA },
+      200,
+      () => {},
+      opts.signal,
+    );
+    addUsage(res.usage);
+    fg.end(res.text, res.usage);
+    const raw = z.object({ follow_ups: z.array(z.string()) }).parse(JSON.parse(res.text)).follow_ups;
+    answered.followUps = cleanFollowUps(raw, q);
+  } catch (err) {
+    fg.fail(err);
+    if (opts.signal?.aborted) throw err;
+  }
+  answered.meta.latencyMs.followUps = Math.round(performance.now() - tFollow);
+  answered.meta.latencyMs.total = Math.round(performance.now() - t0);
+  answered.meta.costUsd = costUsd(deps.chat.model, usage.input, usage.output);
+  return answered;
 }

@@ -201,7 +201,8 @@ function Details({ r }: { r: AskResult }) {
           <dt>Time</dt>
           <dd>
             {secs(m.latencyMs.total)} (search {m.latencyMs.retrieve}ms, writing {secs(m.latencyMs.generate)}
-            {m.latencyMs.rewrite ? `, follow-up rewrite ${m.latencyMs.rewrite}ms` : ""})
+            {m.latencyMs.rewrite ? `, follow-up rewrite ${m.latencyMs.rewrite}ms` : ""}
+            {m.latencyMs.followUps ? `, then suggestions ${secs(m.latencyMs.followUps)}` : ""})
           </dd>
         </div>
         <div>
