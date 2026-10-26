@@ -27,6 +27,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   conflict: "Conflicting or outdated sources",
   unanswerable: "Not in the sources",
   off_script: "Off-topic and manipulation",
+  red_team: "Security attacks",
 };
 
 function fmt(v: number | null | undefined, kind: Kind): string {
