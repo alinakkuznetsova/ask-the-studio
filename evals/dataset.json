@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.7",
+  "version": "2026-10-26.8",
   "asOf": "2026-10-26",
   "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
@@ -112,6 +112,17 @@
       "mustInclude": ["£235", "£37"],
       "mustNotInclude": [],
       "reference": "The MARINE set is £235 for all five pieces, saving £37 compared with £272 bought separately."
+    },
+    {
+      "id": "m9-collections-difference",
+      "category": "multi_doc",
+      "question": "What's the difference between the three collections?",
+      "expect": "answer",
+      "requiredDocs": [["solar-collection"], ["marine-collection"], ["lunar-collection"]],
+      "acceptableDocs": ["about", "materials", "faq"],
+      "mustInclude": ["parure", "red agate", "pearl", "silver"],
+      "mustNotInclude": [],
+      "reference": "All three are parures: five matching pieces designed to be worn together or apart. SOLAR is gold-plated with red agate, MARINE is gold-plated with blue enamel and freshwater pearls, and LUNAR is unplated silver-tone stainless steel with star-cut crystals."
     },
     {
       "id": "m2-set-earrings-return",
