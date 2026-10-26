@@ -146,7 +146,7 @@ const METRICS: [keyof Summary, string, "pct" | "num" | "ms" | "usd"][] = [
   ["sentenceCoverage", "Sentences with a verified source", "pct"],
   ["citationPrecision", "Citation precision", "pct"],
   ["followUpAnswerRate", "Suggested follow-ups answered", "pct"],
-  ["followUpFreshness", "Follow-ups not already answered (judge)", "pct"],
+  ["followUpFreshness", "Follow-ups on topic and new (judge)", "pct"],
   ["latencyP50", "Latency p50", "ms"],
   ["latencyP95", "Latency p95", "ms"],
   ["costPerAnswerUsd", "Cost per answer", "usd"],

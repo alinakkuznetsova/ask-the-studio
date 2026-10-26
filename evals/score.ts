@@ -183,7 +183,7 @@ export interface Summary {
   sentenceCoverage: number | null;
   citationPrecision: number | null;
   followUpAnswerRate: number | null; // share of suggested follow-ups that got an answer
-  followUpFreshness: number | null; // share of answers whose follow-ups ask something new
+  followUpFreshness: number | null; // share of answers whose follow-ups are on topic and not already answered
   latencyP50: number | null;
   latencyP95: number | null;
   costPerAnswerUsd: number | null;
