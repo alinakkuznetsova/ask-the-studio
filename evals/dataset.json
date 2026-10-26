@@ -1,7 +1,7 @@
 {
-  "version": "2026-10-26.5",
+  "version": "2026-10-26.6",
   "asOf": "2026-10-26",
-  "notes": "asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
+  "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
     {
       "id": "s1-solar-necklace-price",
@@ -92,6 +92,17 @@
       "reference": "40cm, extending to 45cm with the adjustable clasp."
     },
     {
+      "id": "s9-silver-hypoallergenic",
+      "category": "straightforward",
+      "question": "Is the silver hypoallergenic?",
+      "expect": "answer",
+      "requiredDocs": [["materials", "lunar-collection"]],
+      "acceptableDocs": ["lunar-star-ring", "lunar-crescent-earrings", "lunar-constellation-necklace", "lunar-star-bracelet", "lunar-eclipse-bangle", "about", "faq"],
+      "mustInclude": ["hypoallergenic", "stainless steel|316L"],
+      "mustNotInclude": ["sterling silver is hypoallergenic", "made of sterling silver"],
+      "reference": "Yes. Our silver-tone LUNAR pieces are polished 316L stainless steel, not sterling silver, which is hypoallergenic and meets the EU Nickel Directive limits. With a severe nickel allergy, email hello@parurelondon.com first."
+    },
+    {
       "id": "m1-marine-set-saving",
       "category": "multi_doc",
       "question": "I want the whole MARINE collection. How much is the set and how much do I save compared with buying each piece?",
@@ -173,6 +184,17 @@
       "reference": "The LUNAR star ring comes in UK sizes J, L, N and P."
     },
     {
+      "id": "m8-return-gift",
+      "category": "multi_doc",
+      "question": "How do I return a gift?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026"]],
+      "acceptableDocs": ["gifting", "faq", "contact"],
+      "mustInclude": ["store credit", "hello@parurelondon.com"],
+      "mustNotInclude": ["gift returns are not accepted"],
+      "reference": "Within 30 days of delivery, email hello@parurelondon.com with the order number or gift receipt. You get store credit as a gift card by email, and the buyer isn't told."
+    },
+    {
       "id": "c1-return-window",
       "category": "conflict",
       "question": "How many days do I have to return something?",
@@ -226,6 +248,17 @@
       "mustInclude": ["remove|take it off|take off|taking it off|taking your jewellery off|before swimming"],
       "mustNotInclude": ["yes, you can", "safe to swim"],
       "reference": "We recommend taking jewellery off before swimming. The steel and PVD coating are highly water and sweat resistant, but MARINE pearls must be kept out of water entirely."
+    },
+    {
+      "id": "c9-rings-shower",
+      "category": "conflict",
+      "question": "Can I wear the rings in the shower?",
+      "expect": "answer",
+      "requiredDocs": [["jewellery-care"]],
+      "acceptableDocs": ["faq", "materials", "pearl-care", "solar-ring", "marine-tide-ring", "lunar-star-ring"],
+      "mustInclude": ["off before showering|taking your jewellery off|take them off|taking them off|remove"],
+      "mustNotInclude": ["yes, you can wear", "fine to shower"],
+      "reference": "We recommend taking jewellery off before showering. The steel and PVD coating are highly water resistant, but MARINE pearls should never get wet."
     },
     {
       "id": "c5-ring-sizes-general",

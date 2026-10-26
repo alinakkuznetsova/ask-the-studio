@@ -14,11 +14,11 @@ interface Message {
 }
 
 const SUGGESTIONS = [
+  "Is the silver hypoallergenic?",
+  "Can I wear the rings in the shower?",
+  "How do I return a gift?",
   "Can I return earrings that came in a set?",
   "How much do I save buying the MARINE set?",
-  "Can I go swimming in my jewellery?",
-  "Do you ship to the USA?",
-  "What sizes do LUNAR rings come in?",
 ];
 
 // questions that show how it behaves at the edges, for the demo
