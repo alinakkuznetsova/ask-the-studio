@@ -34,7 +34,7 @@ export interface Chunk {
 export interface ScoredChunk {
   chunk: Chunk;
   score: number; // fused rrf score
-  vectorScore: number | null; // cosine similarity, if found by the vector retriever
+  vectorScore: number | null; // cosine similarity to the question, computed for every chunk
   bm25Score: number | null;
 }
 
