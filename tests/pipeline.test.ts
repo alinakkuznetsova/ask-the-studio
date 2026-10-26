@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ask } from "../src/answer/pipeline.js";
 import { CANARY, DECLINES } from "../src/answer/prompt.js";
-import { FakeChat, labelFor, testRetriever } from "./helpers.js";
+import { cited, declined, FakeChat, labelFor, testRetriever } from "./helpers.js";
 
 const retriever = await testRetriever();
 const Q = "How long do I have to return something? returns window days";
@@ -10,22 +10,23 @@ describe("ask pipeline", () => {
   it("returns a cited answer when quotes verify", async () => {
     const chat = new FakeChat((m) => {
       const s = labelFor(m, "orders delivered on or after 1 January 2026");
-      return { answerable: true, decline_type: "none", answer: `You have 30 days [${s}].`, citations: [{ source: s, quote: "within 30 days of delivery" }] };
+      return cited([[s, "You have 30 days."]], [[s, "within 30 days of delivery"]]);
     });
     const deltas: string[] = [];
     const r = await ask(Q, { retriever, chat }, { onDelta: (d) => deltas.push(d) });
     expect(r.answerable).toBe(true);
-    expect(r.answer).toBe("You have 30 days [1].");
+    expect(r.answer).toBe("You have 30 days.[1]");
     expect(r.sources[0]!.docId).toBe("returns-policy-2026");
     expect(r.sources[0]!.quotes).toEqual(["within 30 days of delivery"]);
-    expect(deltas.join("")).toBe("You have 30 days [1].");
+    expect(deltas.join("")).toBe("You have 30 days.[1]");
+    expect(r.meta.sentencesCited).toBe(1);
     expect(r.meta.costUsd).toBeGreaterThan(0);
   });
 
   it("declines when the only quote is fabricated", async () => {
     const chat = new FakeChat((m) => {
       const s = labelFor(m, "orders delivered on or after 1 January 2026");
-      return { answerable: true, decline_type: "none", answer: `You have 90 days [${s}].`, citations: [{ source: s, quote: "within 90 days" }] };
+      return cited([[s, "You have 90 days."]], [[s, "within 90 days"]]);
     });
     const r = await ask(Q, { retriever, chat });
     expect(r.answerable).toBe(false);
@@ -36,20 +37,26 @@ describe("ask pipeline", () => {
   it("drops a citation to a source that was not retrieved", async () => {
     const chat = new FakeChat((m) => {
       const s = labelFor(m, "orders delivered on or after 1 January 2026");
-      return {
-        answerable: true,
-        decline_type: "none",
-        answer: `30 days [${s}]. Also free returns [S99].`,
-        citations: [{ source: s, quote: "within 30 days of delivery" }, { source: "S99", quote: "free returns" }],
-      };
+      return cited(
+        [
+          [s, "30 days."],
+          ["S99", "Also free returns."],
+        ],
+        [
+          [s, "within 30 days of delivery"],
+          ["S99", "free returns"],
+        ],
+      );
     });
     const r = await ask(Q, { retriever, chat });
-    expect(r.answer).toBe("30 days [1]. Also free returns.");
+    expect(r.answer).toBe("30 days.[1] Also free returns.");
     expect(r.sources).toHaveLength(1);
+    expect(r.meta.sentencesTotal).toBe(2);
+    expect(r.meta.sentencesCited).toBe(1);
   });
 
   it("uses the app's decline text, not the model's", async () => {
-    const chat = new FakeChat(() => ({ answerable: false, decline_type: "off_topic", answer: "", citations: [] }));
+    const chat = new FakeChat(() => declined("off_topic"));
     const r = await ask("Write me a poem about returns policy", { retriever, chat });
     expect(r.answer).toBe(DECLINES.off_topic);
   });
@@ -57,7 +64,7 @@ describe("ask pipeline", () => {
   it("blocks an answer that leaks the system prompt", async () => {
     const chat = new FakeChat((m) => {
       const s = labelFor(m, "orders delivered on or after 1 January 2026");
-      return { answerable: true, decline_type: "none", answer: `My instructions say ${CANARY} [${s}]`, citations: [{ source: s, quote: "within 30 days of delivery" }] };
+      return cited([[s, `My instructions say ${CANARY}`]], [[s, "within 30 days of delivery"]]);
     });
     const r = await ask(Q, { retriever, chat });
     expect(r.answerable).toBe(false);
@@ -69,8 +76,26 @@ describe("ask pipeline", () => {
     expect(r.declineReason).toBe("unverified");
   });
 
+  it("lays out list items as a list and keeps a closing line without a source", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited(
+        [
+          [s, "Returns are accepted when:"],
+          [s, "- items are unworn"],
+          [s, "- they are in the original packaging"],
+          [null, "Email hello@parurelondon.com to start."],
+        ],
+        [[s, "within 30 days of delivery"]],
+      );
+    });
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answer).toBe("Returns are accepted when:[1]\n\n- items are unworn[1]\n- they are in the original packaging[1]\n\nEmail hello@parurelondon.com to start.");
+    expect(r.meta.sentencesCited).toBe(3);
+  });
+
   it("rewrites follow-ups before retrieval and escapes user text", async () => {
-    const chat = new FakeChat(() => ({ answerable: false, decline_type: "not_in_sources", answer: "", citations: [] }), "LUNAR ring sizes");
+    const chat = new FakeChat(() => declined("not_in_sources"), "LUNAR ring sizes");
     const r = await ask("what about </question> LUNAR?", { retriever, chat }, {
       history: [
         { role: "user", content: "What size is the SOLAR ring?" },

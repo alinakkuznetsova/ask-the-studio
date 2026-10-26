@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { createApp } from "../src/server/app.js";
-import { FakeChat, labelFor, testRetriever } from "./helpers.js";
+import { cited, FakeChat, labelFor, testRetriever } from "./helpers.js";
 
 const retriever = await testRetriever();
 const chat = new FakeChat((m) => {
   const s = labelFor(m, "orders delivered on or after 1 January 2026");
-  return { answerable: true, decline_type: "none", answer: `30 days [${s}].`, citations: [{ source: s, quote: "within 30 days of delivery" }] };
+  return cited([[s, "30 days."]], [[s, "within 30 days of delivery"]]);
 });
 const mk = (rate = 100) => createApp({ deps: { retriever, chat }, trustProxy: true, ratePerMinute: rate, dailyCap: 1000, docs: 31 });
 const post = (app: ReturnType<typeof mk>, path: string, body: unknown, headers: Record<string, string> = {}) =>
@@ -20,7 +20,7 @@ describe("server", () => {
     const res = await post(mk(), "/ask", { question: "returns window days" });
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.answer).toBe("30 days [1].");
+    expect(json.answer).toBe("30 days.[1]");
     expect(json.sources[0].docId).toBe("returns-policy-2026");
     expect(res.headers.get("cache-control")).toBe("no-store");
   });

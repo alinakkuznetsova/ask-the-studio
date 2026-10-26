@@ -63,6 +63,8 @@ export interface AskMeta {
   retrieved: { chunkId: string; score: number; vectorScore: number | null }[];
   citationsChecked: number;
   droppedCitations: number;
+  sentencesTotal: number;
+  sentencesCited: number; // sentences with at least one verified source
 }
 
 export interface AskResult {

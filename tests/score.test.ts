@@ -17,7 +17,7 @@ function result(p: Partial<AskResult> & { retrieved?: string[]; checked?: number
       traceId: "t", model: "m", promptVersion: "p", latencyMs: { rewrite: 0, retrieve: 0, generate: 0, total: 100 },
       tokens: { input: 0, output: 0 }, costUsd: 0.001,
       retrieved: (p.retrieved ?? []).map((chunkId) => ({ chunkId, score: 1, vectorScore: 0.5 })),
-      citationsChecked: p.checked ?? 0, droppedCitations: p.dropped ?? 0,
+      citationsChecked: p.checked ?? 0, droppedCitations: p.dropped ?? 0, sentencesTotal: 1, sentencesCited: 1,
     },
   };
 }

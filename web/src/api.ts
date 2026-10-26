@@ -28,6 +28,8 @@ export interface AskResult {
     retrieved: { chunkId: string; score: number; vectorScore: number | null }[];
     citationsChecked: number;
     droppedCitations: number;
+    sentencesTotal: number;
+    sentencesCited: number;
   };
 }
 
@@ -117,6 +119,7 @@ export interface EvalSummary {
   correctness: number | null;
   groundedness: number | null;
   quoteVerification: number | null;
+  sentenceCoverage: number | null;
   citationPrecision: number | null;
   latencyP50: number | null;
   latencyP95: number | null;

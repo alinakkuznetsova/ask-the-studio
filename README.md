@@ -144,8 +144,9 @@ For disagreements between current sources (FAQ vs care guide), the prompt ranks 
 
 ### Prompting and grounding
 
-- The model returns **strict JSON** (`answerable`, `decline_type`, `answer`, `citations[{source, quote}]`), streamed field by field so the answer text appears as it is written.
-- Sources are labelled `S1…S6` (current) and `A1…` (archived). The answer cites them inline; the server maps them to display numbers.
+- The model returns **strict JSON**: `answerable`, `decline_type`, `sentences[{sources, text}]` and `citations[{source, quote}]`. Sources are labelled `S1…S6` (current) and `A1…` (archived).
+- **Citation numbers are added by code, not written by the model.** Each sentence declares the sources it relies on; the server appends the numbers after verifying them. An earlier version asked the model to write `[S1]` markers inline: the first eval run showed it omitted them in almost every answer, even with an explicit rule. Changing the structure fixed what an instruction could not.
+- `sources` comes before `text` in each sentence, so while streaming, a sentence's numbers are known the moment its text finishes.
 - **Every quote is checked in code** against the text of the source it cites (normalising case, curly quotes and markdown). Citations to sources that were not retrieved, or quotes that don't appear verbatim, are dropped. If no verified quote from a current source survives, the answer becomes a decline. This turns "grounded" from an instruction into a guarantee about what reaches the user.
 - **Declines are written by the app, not the model**, so they are consistent and always point to hello@parurelondon.com. There are four kinds: not in the sources, off-topic, low relevance (no model call made), and unverified.
 - Partly answerable questions are answered for the part the sources cover, with the gap stated.
@@ -180,6 +181,7 @@ Each case lists the documents retrieval must find, the documents it may cite, fa
 | Correctness | LLM judge, 1 to 5 against the reference answer |
 | Groundedness | LLM judge: every claim supported by the cited sources' text |
 | Quote verification | Share of the model's quotes that matched their source verbatim |
+| Sentence coverage | Share of answer sentences backed by at least one verified source |
 | Citation precision | Share of cited documents that are relevant |
 | Latency and cost | p50 and p95 end to end; USD per answer from token counts |
 

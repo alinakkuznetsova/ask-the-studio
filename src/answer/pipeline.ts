@@ -14,13 +14,13 @@ import {
   sourceLabel,
   SYSTEM_PROMPT,
 } from "./prompt.js";
-import { AnswerFieldStreamer, MarkerRewriter, rewriteMarkers } from "./stream-parse.js";
+import { joinSentences, MarkerRewriter, rewriteMarkers, SentenceStreamer } from "./stream-parse.js";
 import { leaksPrompt, validateCitations } from "./validate.js";
 
 const ModelOutput = z.object({
   answerable: z.boolean(),
   decline_type: z.enum(["none", "not_in_sources", "off_topic"]),
-  answer: z.string(),
+  sentences: z.array(z.object({ sources: z.array(z.string()), text: z.string() })),
   citations: z.array(z.object({ source: z.string(), quote: z.string() })),
 });
 
@@ -81,7 +81,13 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   const { results, bestSimilarity, archived } = await deps.retriever.search(searchQuery);
   const retrieveMs = performance.now() - tRetrieve;
 
-  const finish = (partial: Omit<AskResult, "meta">, generateMs: number, dropped = 0, checked = 0): AskResult => ({
+  interface Stats {
+    dropped?: number;
+    checked?: number;
+    sentencesTotal?: number;
+    sentencesCited?: number;
+  }
+  const finish = (partial: Omit<AskResult, "meta">, generateMs: number, stats: Stats = {}): AskResult => ({
     ...partial,
     meta: {
       traceId,
@@ -101,23 +107,25 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
         score: Number(r.score.toFixed(4)),
         vectorScore: r.vectorScore === null ? null : Number(r.vectorScore.toFixed(4)),
       })),
-      citationsChecked: checked,
-      droppedCitations: dropped,
+      citationsChecked: stats.checked ?? 0,
+      droppedCitations: stats.dropped ?? 0,
+      sentencesTotal: stats.sentencesTotal ?? 0,
+      sentencesCited: stats.sentencesCited ?? 0,
     },
   });
-  const decline = (reason: DeclineReason, generateMs = 0, dropped = 0, checked = 0) =>
-    finish({ answer: DECLINES[reason], answerable: false, declineReason: reason, sources: [] }, generateMs, dropped, checked);
+  const decline = (reason: DeclineReason, generateMs = 0, stats: Stats = {}) =>
+    finish({ answer: DECLINES[reason], answerable: false, declineReason: reason, sources: [] }, generateMs, stats);
 
   // 3. relevance gate: nothing in the kb is close, so do not spend a model call
   if (bestSimilarity < settings.minSimilarity) return decline("low_relevance");
 
-  // 4. generate, streaming the answer field as it arrives
+  // 4. generate, streaming each sentence (with its source markers) as it arrives
   const tGen = performance.now();
   const labels = new Map<string, { chunk: (typeof results)[number]["chunk"]; archived: boolean }>();
   results.forEach((r, i) => labels.set(sourceLabel(i, false), { chunk: r.chunk, archived: false }));
   archived.forEach((c, i) => labels.set(sourceLabel(i, true), { chunk: c, archived: true }));
 
-  const fieldStreamer = new AnswerFieldStreamer();
+  const sentenceStreamer = new SentenceStreamer();
   const markers = new MarkerRewriter(new Set(labels.keys()));
   const gen = await deps.chat.streamJson(
     [
@@ -127,7 +135,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     { name: "grounded_answer", schema: ANSWER_SCHEMA },
     settings.maxAnswerTokens,
     (delta) => {
-      const text = fieldStreamer.feed(delta);
+      const text = sentenceStreamer.feed(delta);
       if (text && opts.onDelta) {
         const out = markers.push(text);
         if (out) opts.onDelta(out);
@@ -150,7 +158,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     return decline("unverified", generateMs);
   }
 
-  if (leaksPrompt(parsed.answer)) return decline("off_topic", generateMs);
+  if (leaksPrompt(parsed.sentences.map((x) => x.text).join(" "))) return decline("off_topic", generateMs);
   if (!parsed.answerable) {
     return decline(parsed.decline_type === "off_topic" ? "off_topic" : "not_in_sources", generateMs);
   }
@@ -158,10 +166,16 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   const sourceText = new Map([...labels].map(([label, v]) => [label, v.chunk.text]));
   const { valid, dropped, checked } = validateCitations(parsed.citations, sourceText);
   // an answer must be backed by at least one verified quote from a current source
-  if (!valid.some((v) => !labels.get(v.source)!.archived)) return decline("unverified", generateMs, dropped, checked);
+  if (!valid.some((v) => !labels.get(v.source)!.archived)) return decline("unverified", generateMs, { dropped, checked });
 
+  // markers are added by code from each sentence's declared sources, keeping
+  // only sources whose quotes verified. the model cannot forget to cite.
   const validLabels = new Set(valid.map((v) => v.source));
-  const { text, order } = rewriteMarkers(parsed.answer, validLabels);
+  const parts = parsed.sentences
+    .map((x) => ({ text: x.text, labels: [...new Set(x.sources.map((l) => l.trim()))].filter((l) => validLabels.has(l)) }))
+    .filter((x) => x.text.trim());
+  const sentencesCited = parts.filter((x) => x.labels.length > 0).length;
+  const { text, order } = rewriteMarkers(joinSentences(parts), validLabels);
   // sources cited with a quote but not marked inline still get listed, after the inline ones
   for (const v of valid) if (!order.includes(v.source)) order.push(v.source);
 
@@ -180,5 +194,10 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     };
   });
 
-  return finish({ answer: text, answerable: true, sources }, generateMs, dropped, checked);
+  return finish({ answer: text, answerable: true, sources }, generateMs, {
+    dropped,
+    checked,
+    sentencesTotal: parts.length,
+    sentencesCited,
+  });
 }

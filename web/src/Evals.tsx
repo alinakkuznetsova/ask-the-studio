@@ -11,6 +11,7 @@ const METRICS: { key: keyof EvalSummary; label: string; kind: Kind; help: string
   { key: "correctness", label: "Correctness (out of 5)", kind: "num", help: "An LLM judge compares each answer with a reference answer." },
   { key: "groundedness", label: "Fully supported by sources", kind: "pct", help: "The judge found every claim in the cited sources." },
   { key: "quoteVerification", label: "Quotes verified", kind: "pct", help: "Quotes the model gave that matched the source word for word." },
+  { key: "sentenceCoverage", label: "Sentences backed by a source", kind: "pct", help: "Answer sentences with at least one verified source." },
   { key: "citationPrecision", label: "Citations on target", kind: "pct", help: "Cited documents that are relevant to the question." },
   { key: "falseAnswers", label: "Answered when it should decline", kind: "count", help: "The costly failure: made something up.", lowerIsBetter: true },
   { key: "falseDeclines", label: "Declined when it could answer", kind: "count", help: "Unhelpful, but safe.", lowerIsBetter: true },

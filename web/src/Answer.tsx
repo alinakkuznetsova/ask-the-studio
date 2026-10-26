@@ -123,6 +123,12 @@ function Details({ r }: { r: AskResult }) {
           </div>
         )}
         <div>
+          <dt>Sentences cited</dt>
+          <dd>
+            {m.sentencesCited} of {m.sentencesTotal} backed by a verified source
+          </dd>
+        </div>
+        <div>
           <dt>Quotes checked</dt>
           <dd>
             {m.citationsChecked - m.droppedCitations} of {m.citationsChecked} verified

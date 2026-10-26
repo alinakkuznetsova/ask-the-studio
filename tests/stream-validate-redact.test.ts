@@ -1,17 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { AnswerFieldStreamer, MarkerRewriter, rewriteMarkers } from "../src/answer/stream-parse.js";
+import { joinSentences, MarkerRewriter, rewriteMarkers, SentenceStreamer } from "../src/answer/stream-parse.js";
 import { leaksPrompt, validateCitations } from "../src/answer/validate.js";
 import { redact } from "../src/server/redact.js";
 
-describe("AnswerFieldStreamer", () => {
-  it("decodes the answer field across arbitrary chunk boundaries", () => {
-    const json = JSON.stringify({ answerable: true, decline_type: "none", answer: 'Say "hi"\nthen £5 é', citations: [] });
-    for (const size of [1, 2, 3, 5, 13]) {
-      const s = new AnswerFieldStreamer();
+describe("SentenceStreamer", () => {
+  const output = {
+    answerable: true,
+    decline_type: "none",
+    sentences: [
+      { sources: ["S1"], text: 'Say "hi"\nthen £5 \u00e9.' },
+      { sources: ["S2", "A1"], text: "Prices:" },
+      { sources: ["S2"], text: "- ring £40" },
+      { sources: [], text: "- bangle £48" },
+      { sources: ["S3"], text: "Done." },
+    ],
+    citations: [{ source: "S1", quote: "q" }],
+  };
+  const expected = joinSentences(output.sentences.map((x) => ({ text: x.text, labels: x.sources })));
+
+  it("streams the same text the final join produces, across any chunk boundaries", () => {
+    const json = JSON.stringify(output);
+    for (const size of [1, 2, 3, 5, 13, 1000]) {
+      const s = new SentenceStreamer();
       let out = "";
       for (let i = 0; i < json.length; i += size) out += s.feed(json.slice(i, i + size));
-      expect(out).toBe('Say "hi"\nthen £5 é');
+      expect(out).toBe(expected);
     }
+    expect(expected).toBe('Say "hi"\nthen £5 é.[S1] Prices:[S2][A1]\n\n- ring £40[S2]\n- bangle £48\n\nDone.[S3]');
+  });
+
+  it("stops at the citations and ignores declined output", () => {
+    const s = new SentenceStreamer();
+    expect(s.feed(JSON.stringify({ answerable: false, decline_type: "off_topic", sentences: [], citations: [] }))).toBe("");
   });
 });
 

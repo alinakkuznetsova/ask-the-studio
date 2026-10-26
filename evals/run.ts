@@ -61,7 +61,7 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
     return {
       id: c.id, category: c.category, question: c.question, expect: c.expect, answer: "", answerable: false,
       retrievalRecall: null, declineCorrect: false, factsPass: false, factFailures: [], citationPrecision: null,
-      quoteVerification: null, judge: null, pass: false, latencyMs: 0, costUsd: null, tokens: { input: 0, output: 0 },
+      quoteVerification: null, sentenceCoverage: null, judge: null, pass: false, latencyMs: 0, costUsd: null, tokens: { input: 0, output: 0 },
       sources: [], retrieved: [], error: message,
     };
   }
@@ -95,6 +95,7 @@ const METRICS: [keyof Summary, string, "pct" | "num" | "ms" | "usd"][] = [
   ["correctness", "Correctness (judge, 1 to 5)", "num"],
   ["groundedness", "Groundedness (judge)", "pct"],
   ["quoteVerification", "Quotes verified verbatim", "pct"],
+  ["sentenceCoverage", "Sentences with a verified source", "pct"],
   ["citationPrecision", "Citation precision", "pct"],
   ["latencyP50", "Latency p50", "ms"],
   ["latencyP95", "Latency p95", "ms"],

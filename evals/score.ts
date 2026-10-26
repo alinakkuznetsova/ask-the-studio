@@ -39,6 +39,7 @@ export interface CaseResult {
   factFailures: string[];
   citationPrecision: number | null;
   quoteVerification: number | null; // share of model quotes that verified
+  sentenceCoverage: number | null; // share of answer sentences with a verified source
   judge: Judgement | null;
   pass: boolean;
   latencyMs: number;
@@ -103,6 +104,9 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
   const citationPrecision =
     r.answerable && citedDocs.length ? citedDocs.filter((d) => allowed.has(d)).length / citedDocs.length : null;
 
+  const sentenceCoverage =
+    r.answerable && r.meta.sentencesTotal ? r.meta.sentencesCited / r.meta.sentencesTotal : null;
+
   const quoteVerification = r.meta.citationsChecked
     ? (r.meta.citationsChecked - r.meta.droppedCitations) / r.meta.citationsChecked
     : null;
@@ -126,6 +130,7 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     factFailures,
     citationPrecision,
     quoteVerification,
+    sentenceCoverage,
     judge,
     pass,
     latencyMs: r.meta.latencyMs.total,
@@ -156,6 +161,7 @@ export interface Summary {
   correctness: number | null; // judge mean, 1 to 5
   groundedness: number | null; // share of answers the judge rated fully supported
   quoteVerification: number | null;
+  sentenceCoverage: number | null;
   citationPrecision: number | null;
   latencyP50: number | null;
   latencyP95: number | null;
@@ -183,6 +189,7 @@ export function summarise(results: CaseResult[]): Summary {
     correctness: mean(answered.map((r) => r.judge!.correctness)),
     groundedness: pct(answered.map((r) => r.judge!.grounded)),
     quoteVerification: mean(vals((r) => r.quoteVerification)),
+    sentenceCoverage: mean(vals((r) => r.sentenceCoverage)),
     citationPrecision: mean(vals((r) => r.citationPrecision)),
     latencyP50: percentile(results.map((r) => r.latencyMs), 50),
     latencyP95: percentile(results.map((r) => r.latencyMs), 95),
