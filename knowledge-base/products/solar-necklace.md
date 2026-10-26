@@ -18,4 +18,4 @@ Elegant necklace composed of rounded, dome-like settings, detailed with red agat
 Each piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.
 
 ## Size
-One length, with an adjustable clasp so it can be worn shorter.
+40cm, extending to 45cm with the adjustable clasp.

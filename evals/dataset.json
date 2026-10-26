@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.2",
+  "version": "2026-10-26.3",
   "asOf": "2026-10-26",
   "notes": "asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
@@ -79,6 +79,17 @@
       "mustInclude": ["hello@parurelondon.com"],
       "mustNotInclude": ["completely safe", "guaranteed"],
       "reference": "316L steel is hypoallergenic and meets the EU Nickel Directive limits, but with a severe, diagnosed nickel allergy you should email hello@parurelondon.com before ordering."
+    },
+    {
+      "id": "s8-solar-necklace-length",
+      "category": "straightforward",
+      "question": "How long is the SOLAR necklace in centimetres?",
+      "expect": "answer",
+      "requiredDocs": [["solar-necklace"]],
+      "acceptableDocs": ["solar-collection", "size-guide"],
+      "mustInclude": ["40", "45"],
+      "mustNotInclude": [],
+      "reference": "40cm, extending to 45cm with the adjustable clasp."
     },
     {
       "id": "m1-marine-set-saving",
@@ -239,15 +250,15 @@
       "reference": "UK express delivery is free on LUNAR orders until 30 November 2026 (launch offer); otherwise it's £6.95."
     },
     {
-      "id": "u1-solar-necklace-length",
+      "id": "u1-solar-bangle-diameter",
       "category": "unanswerable",
-      "question": "How long is the SOLAR necklace in centimetres?",
+      "question": "What is the inner diameter of the SOLAR bangle?",
       "expect": "partial_or_decline",
       "requiredDocs": [],
-      "acceptableDocs": ["solar-necklace", "solar-collection", "size-guide"],
+      "acceptableDocs": ["solar-bangle", "solar-collection", "size-guide"],
       "mustInclude": [],
-      "mustNotInclude": ["40cm", "45cm", "42cm", "40 cm", "45 cm"],
-      "reference": "The exact length isn't published. It's one length with an adjustable clasp; email hello@parurelondon.com for measurements."
+      "mustNotInclude": ["6cm", "6.5cm", "65mm", "60mm", "6 cm"],
+      "reference": "The diameter isn't listed. The bangle is one size with a small opening so it can be gently adjusted; email hello@parurelondon.com for the measurement."
     },
     {
       "id": "u2-engraving",
