@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { joinSentences, MarkerRewriter, rewriteMarkers, SentenceStreamer } from "../src/answer/stream-parse.js";
 import { leaksPrompt, validateCitations } from "../src/answer/validate.js";
 import { redact } from "../src/server/redact.js";
+import { redactAnswer, StreamRedactor } from "../src/answer/safety.js";
 
 describe("SentenceStreamer", () => {
   const output = {
@@ -79,5 +80,26 @@ describe("redact", () => {
   });
   it("leaves prices and sizes alone", () => {
     expect(redact("Is the £225 set in UK size O?")).toBe("Is the £225 set in UK size O?");
+  });
+});
+
+describe("answer output filter", () => {
+  it("masks cards, phones and other emails but keeps the support email, prices and sizes", () => {
+    const out = redactAnswer("Card 4111 1111 1111 1111, call 020 7946 0958, jo@x.com or hello@parurelondon.com. £225, 40cm, UK size O, 30 days.");
+    expect(out).toBe(
+      "Card [card number removed], call [phone number removed], [email removed] or hello@parurelondon.com. £225, 40cm, UK size O, 30 days.",
+    );
+  });
+
+  it("never streams any digits of a card number, whatever the chunk boundaries", () => {
+    const text = "We can't refund 4111 1111 1111 1111 here, email hello@parurelondon.com.";
+    for (const size of [1, 2, 3, 7]) {
+      const r = new StreamRedactor();
+      const parts: string[] = [];
+      for (let i = 0; i < text.length; i += size) parts.push(r.push(text.slice(i, i + size)));
+      parts.push(r.flush());
+      expect(parts.some((p) => /\d{4}/.test(p))).toBe(false);
+      expect(parts.join("")).toBe(redactAnswer(text));
+    }
   });
 });

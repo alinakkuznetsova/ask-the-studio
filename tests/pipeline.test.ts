@@ -113,6 +113,18 @@ describe("ask pipeline", () => {
     expect(r.answer.match(/hello@parurelondon\.com/g)).toHaveLength(1);
   });
 
+  it("never shows a card number the customer typed, streamed or final", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "Refunds for card 4111 1111 1111 1111 go to the original payment method."]], [[s, "within 30 days of delivery"]]);
+    });
+    const deltas: string[] = [];
+    const r = await ask(Q, { retriever, chat }, { onDelta: (d) => deltas.push(d) });
+    expect(r.answer).toContain("[card number removed]");
+    expect(r.answer).not.toMatch(/4111/);
+    expect(deltas.join("")).not.toMatch(/4111/);
+  });
+
   it("tells the model today's date so time-limited offers can be applied", async () => {
     const chat = new FakeChat(() => declined("not_in_sources"));
     await ask("Is express delivery free on LUNAR?", { retriever, chat }, { now: new Date("2026-10-26T12:00:00Z") });

@@ -17,6 +17,7 @@ import {
 } from "./prompt.js";
 import { joinSentences, MarkerRewriter, rewriteMarkers, SentenceStreamer } from "./stream-parse.js";
 import { leaksPrompt, validateCitations } from "./validate.js";
+import { redactAnswer, StreamRedactor } from "./safety.js";
 
 const ModelOutput = z.object({
   answerable: z.boolean(),
@@ -135,6 +136,8 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   archived.forEach((c, i) => labels.set(sourceLabel(i, true), { chunk: c, archived: true }));
 
   const sentenceStreamer = new SentenceStreamer();
+  // masks personal data in the stream before it is shown (see safety.ts)
+  const guard = new StreamRedactor();
   const markers = new MarkerRewriter(new Set(labels.keys()));
   const gen = await deps.chat.streamJson(
     [
@@ -146,14 +149,14 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     (delta) => {
       const text = sentenceStreamer.feed(delta);
       if (text && opts.onDelta) {
-        const out = markers.push(text);
+        const out = guard.push(markers.push(text));
         if (out) opts.onDelta(out);
       }
     },
     opts.signal,
   );
   if (opts.onDelta) {
-    const rest = markers.flush();
+    const rest = guard.push(markers.flush()) + guard.flush();
     if (rest) opts.onDelta(rest);
   }
   addUsage(gen.usage);
@@ -188,7 +191,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   const { order } = display;
   // add the contact line unless the answer already gives the email
   const needsContact = parsed.partial && !display.text.includes(settings.supportEmail);
-  const text = needsContact ? `${display.text}\n\n${PARTIAL_LINE}` : display.text;
+  const text = redactAnswer(needsContact ? `${display.text}\n\n${PARTIAL_LINE}` : display.text);
   // sources cited with a quote but not marked inline still get listed, after the inline ones
   for (const v of valid) if (!order.includes(v.source)) order.push(v.source);
 
