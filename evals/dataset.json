@@ -1,7 +1,7 @@
 {
-  "version": "2026-10-26.8",
+  "version": "2026-10-26.9",
   "asOf": "2026-10-26",
-  "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
+  "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email). The realistic group (p) rephrases questions the way customers write them: typos, indirect, casual. The conversation group (t) asks follow-ups that only make sense with the earlier turns.",
   "cases": [
     {
       "id": "s1-solar-necklace-price",
@@ -487,6 +487,156 @@
       "mustInclude": [],
       "mustNotInclude": ["your code is", "use code", "discount code:"],
       "reference": "Does not invent a discount code; no such code exists in the brand's content."
+    },
+    {
+      "id": "p1-earrings-typos",
+      "category": "realistic",
+      "question": "can i send back earings i bought on there own?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026", "faq"]],
+      "acceptableDocs": [],
+      "mustInclude": ["hygiene"],
+      "mustNotInclude": [],
+      "reference": "No. Earrings can't be returned for hygiene reasons. The only exception is a complete set returned unworn within 30 days."
+    },
+    {
+      "id": "p2-gift-indirect",
+      "category": "realistic",
+      "question": "bought my mum a necklace for her birthday but its not really her style, what can she do",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026", "gifting"]],
+      "acceptableDocs": [],
+      "mustInclude": ["store credit|gift card", "30 days"],
+      "mustNotInclude": [],
+      "reference": "She can return it within 30 days of delivery for store credit, sent to her as a gift card by email. She emails hello@parurelondon.com with the order number or the gift receipt, and the buyer isn't told."
+    },
+    {
+      "id": "p3-post-to-new-york",
+      "category": "realistic",
+      "question": "how much to post an order to new york?",
+      "expect": "answer",
+      "requiredDocs": [["shipping"]],
+      "acceptableDocs": [],
+      "mustInclude": ["£14.95"],
+      "mustNotInclude": [],
+      "reference": "Delivery to the USA is £14.95 and takes 5 to 10 working days."
+    },
+    {
+      "id": "p4-marine-swim-casual",
+      "category": "realistic",
+      "question": "is the marine stuff ok to swim in",
+      "expect": "answer",
+      "requiredDocs": [["pearl-care", "marine-collection"]],
+      "acceptableDocs": [],
+      "mustInclude": ["water"],
+      "mustNotInclude": [],
+      "reference": "No. MARINE pieces have pearls, which must be kept out of water: don't swim, shower or bathe in them."
+    },
+    {
+      "id": "p5-clasp-snapped",
+      "category": "realistic",
+      "question": "my clasp snapped after 3 months, what do i do??",
+      "expect": "answer",
+      "requiredDocs": [["warranty-and-repairs"]],
+      "acceptableDocs": [],
+      "mustInclude": ["12-month|12 months", "photo"],
+      "mustNotInclude": [],
+      "reference": "It's covered by the 12-month warranty against manufacturing faults. Email hello@parurelondon.com with your order number and a photo; if approved, it's repaired or replaced free, including postage."
+    },
+    {
+      "id": "p6-solar-ring-sizes-typos",
+      "category": "realistic",
+      "question": "wat sizes does the solar ring come in",
+      "expect": "answer",
+      "requiredDocs": [["solar-ring", "solar-collection"]],
+      "acceptableDocs": [],
+      "mustInclude": ["size O|UK O"],
+      "mustNotInclude": [],
+      "reference": "The SOLAR ring comes in one size, UK O."
+    },
+    {
+      "id": "p7-discount-casual",
+      "category": "realistic",
+      "question": "do u do student discount or price match",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["faq", "contact"],
+      "mustInclude": [],
+      "mustNotInclude": [],
+      "reference": "Not covered in Parure's information; the customer should email hello@parurelondon.com."
+    },
+    {
+      "id": "p8-plating-rub-off",
+      "category": "realistic",
+      "question": "Does the gold plating rub off?",
+      "expect": "answer",
+      "requiredDocs": [["faq", "solar-collection", "materials", "jewellery-care", "warranty-and-repairs"]],
+      "acceptableDocs": [],
+      "mustInclude": ["PVD"],
+      "mustNotInclude": [],
+      "reference": "Pieces use PVD gold plating over stainless steel, which is resistant to tarnishing and lasts for years with care. Plating flaking under normal wear is covered by the 12-month warranty."
+    },
+    {
+      "id": "t1-lunar-set-earrings",
+      "category": "conversation",
+      "question": "and if I buy it, can I return just the earrings?",
+      "history": [
+        { "role": "user", "content": "How much is the LUNAR set?" },
+        { "role": "assistant", "content": "The LUNAR set is £195 for all five pieces, saving £36 compared with buying them separately." }
+      ],
+      "expect": "answer",
+      "requiredDocs": [["lunar-collection", "returns-policy-2026"]],
+      "acceptableDocs": [],
+      "mustInclude": ["complete|whole set|all five"],
+      "mustNotInclude": [],
+      "reference": "No. Sets are discounted, so the LUNAR set can only be returned complete: all five pieces, unworn and in their original packaging, within 30 days."
+    },
+    {
+      "id": "t2-shower-solar-after-marine",
+      "category": "conversation",
+      "question": "What about the SOLAR ones?",
+      "history": [
+        { "role": "user", "content": "Can I shower in my MARINE pieces?" },
+        { "role": "assistant", "content": "No. Keep pearls out of water: don't swim, shower or bathe in MARINE pieces." }
+      ],
+      "expect": "answer",
+      "requiredDocs": [["jewellery-care", "solar-collection"]],
+      "acceptableDocs": [],
+      "mustInclude": ["shower"],
+      "mustNotInclude": [],
+      "reference": "We recommend taking SOLAR pieces off before showering too, and removing them before swimming, sweating or applying skincare."
+    },
+    {
+      "id": "t3-delivery-germany",
+      "category": "conversation",
+      "question": "and to germany?",
+      "history": [
+        { "role": "user", "content": "How long does UK delivery take?" },
+        { "role": "assistant", "content": "Standard UK delivery (Royal Mail Tracked 48) takes 2 to 3 working days and costs £3.95, free on orders over £100." }
+      ],
+      "expect": "answer",
+      "requiredDocs": [["shipping"]],
+      "acceptableDocs": [],
+      "mustInclude": ["£9.95", "4 to 7"],
+      "mustNotInclude": ["£8.95"],
+      "reference": "Delivery to Europe, including Germany, is £9.95 and takes 4 to 7 working days."
+    },
+    {
+      "id": "t4-ring-sizes-three-turns",
+      "category": "conversation",
+      "question": "Does it come in other sizes?",
+      "history": [
+        { "role": "user", "content": "Tell me about the SOLAR collection." },
+        { "role": "assistant", "content": "SOLAR is our gold-plated collection built around red agate, with five matching pieces." },
+        { "role": "user", "content": "How much is the ring?" },
+        { "role": "assistant", "content": "The SOLAR ring is £45." }
+      ],
+      "expect": "answer",
+      "requiredDocs": [["solar-ring", "solar-collection"]],
+      "acceptableDocs": [],
+      "mustInclude": ["size O|UK O|one size"],
+      "mustNotInclude": [],
+      "reference": "No, the SOLAR ring comes in one size, UK O."
     }
   ]
 }

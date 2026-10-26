@@ -4,7 +4,7 @@ import type { AskResult } from "../src/types.js";
 
 export const CaseSchema = z.object({
   id: z.string(),
-  category: z.enum(["straightforward", "multi_doc", "conflict", "unanswerable", "off_script", "red_team"]),
+  category: z.enum(["straightforward", "multi_doc", "conflict", "realistic", "conversation", "unanswerable", "off_script", "red_team"]),
   question: z.string(),
   history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).optional(),
   expect: z.enum(["answer", "decline", "partial_or_decline"]),

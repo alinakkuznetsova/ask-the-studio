@@ -26,6 +26,8 @@ const CATEGORY_NAMES: Record<string, string> = {
   straightforward: "Straightforward",
   multi_doc: "Needs several documents",
   conflict: "Conflicting or outdated sources",
+  realistic: "Written the way customers write",
+  conversation: "Follow-ups in a conversation",
   unanswerable: "Not in the sources",
   off_script: "Off-topic and manipulation",
   red_team: "Security attacks",
