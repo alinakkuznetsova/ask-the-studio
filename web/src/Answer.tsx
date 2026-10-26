@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { sendFeedback, type AskResult, type Citation } from "./api";
 
 export type AnswerStatus = "streaming" | "done" | "error" | "stopped";
@@ -10,17 +10,20 @@ interface Props {
   supportEmail: string;
   // asks a suggested follow-up; undefined while another answer is streaming
   onAsk?: (question: string) => void;
-  // staff view adds the technical breakdown of how the answer was made
+  // staff view shows citation markers, every source with its quote, and how
+  // the answer was made; customers see the answer and a pill per document
   staff?: boolean;
 }
 
 // renders model text safely: react escapes everything, and we only recognise
 // three things ourselves: citation markers [n], **bold**, and "- " lists.
-// no html from the model is ever injected into the page.
-function inline(text: string, onCite: (n: number) => void, active: number | null): ReactNode[] {
+// no html from the model is ever injected into the page. customers see the
+// answer without markers; staff see which sentence came from which source
+function inline(text: string, onCite: (n: number) => void, active: number | null, markers: boolean): ReactNode[] {
   return text.split(/(\[\d+\]|\*\*[^*]+\*\*)/g).map((part, i) => {
     const cite = part.match(/^\[(\d+)\]$/);
     if (cite) {
+      if (!markers) return null;
       const n = Number(cite[1]);
       return (
         <button
@@ -39,7 +42,14 @@ function inline(text: string, onCite: (n: number) => void, active: number | null
   });
 }
 
-function Body({ text, onCite, active }: { text: string; onCite: (n: number) => void; active: number | null }) {
+interface BodyProps {
+  text: string;
+  onCite: (n: number) => void;
+  active: number | null;
+  markers: boolean;
+}
+
+function Body({ text, onCite, active, markers }: BodyProps) {
   const blocks = text.split(/\n{2,}/);
   return (
     <>
@@ -49,7 +59,7 @@ function Body({ text, onCite, active }: { text: string; onCite: (n: number) => v
           return (
             <ul key={bi}>
               {lines.map((l, li) => (
-                <li key={li}>{inline(l.replace(/^\s*[-*•]\s+/, ""), onCite, active)}</li>
+                <li key={li}>{inline(l.replace(/^\s*[-*•]\s+/, ""), onCite, active, markers)}</li>
               ))}
             </ul>
           );
@@ -59,7 +69,7 @@ function Body({ text, onCite, active }: { text: string; onCite: (n: number) => v
             {lines.map((l, li) => (
               <Fragment key={li}>
                 {li > 0 && <br />}
-                {inline(l, onCite, active)}
+                {inline(l, onCite, active, markers)}
               </Fragment>
             ))}
           </p>
@@ -71,26 +81,110 @@ function Body({ text, onCite, active }: { text: string; onCite: (n: number) => v
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 }
 
-function SourceTag({ c, open, onToggle }: { c: Citation; open: boolean; onToggle: () => void }) {
+function DocIcon() {
   return (
-    <li className={`tag${c.archived ? " is-archived" : ""}${open ? " is-open" : ""}`} id={`src-${c.chunkId}`}>
-      <button type="button" className="tag-head" onClick={onToggle} aria-expanded={open}>
-        <span className="tag-n">{c.n}</span>
-        <span className="tag-title">
+    <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+      <path
+        d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg className={`chev${open ? " is-open" : ""}`} viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// customer view: one quiet pill per document. on a live site each pill would
+// link to the page itself (every document already carries its url); this
+// demo's content is partly invented, so a tap shows the passage instead
+interface SourceGroup {
+  docId: string;
+  title: string;
+  archived: boolean;
+  quotes: string[];
+}
+
+function groupByDoc(sources: Citation[]): SourceGroup[] {
+  const groups = new Map<string, SourceGroup>();
+  for (const c of sources) {
+    const g = groups.get(c.docId) ?? { docId: c.docId, title: c.title, archived: c.archived, quotes: [] };
+    g.quotes.push(...c.quotes.filter((q) => !g.quotes.includes(q)));
+    groups.set(c.docId, g);
+  }
+  return [...groups.values()];
+}
+
+function SourcePills({ sources }: { sources: Citation[] }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const quoteId = useId();
+  const groups = groupByDoc(sources);
+  const shown = groups.find((g) => g.docId === open);
+  return (
+    <div className="pills-wrap">
+      <ul className="pills" aria-label="Where this answer comes from">
+        {groups.map((g) => (
+          <li key={g.docId}>
+            <button
+              type="button"
+              className={`pill${open === g.docId ? " is-open" : ""}`}
+              aria-expanded={open === g.docId}
+              aria-controls={quoteId}
+              onClick={() => setOpen((cur) => (cur === g.docId ? null : g.docId))}
+            >
+              <DocIcon />
+              {g.title}
+              {g.archived && <span className="pill-note">previous version</span>}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {shown && (
+        <div className="pill-quote" id={quoteId}>
+          <p className="pill-from">From {shown.title}</p>
+          {shown.quotes.map((q) => (
+            <p key={q} className="pill-text">
+              “{q}”
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// staff view: every cited passage as a row, with its verification status,
+// effective date and the exact quote on expand
+function SourceRow({ c, open, onToggle }: { c: Citation; open: boolean; onToggle: () => void }) {
+  return (
+    <li className={`src${c.archived ? " is-archived" : ""}`} id={`src-${c.chunkId}`}>
+      <button type="button" className="src-head" onClick={onToggle} aria-expanded={open}>
+        <span className="src-n">{c.n}</span>
+        <span className="src-title">
           {c.title}
-          {c.section !== c.title && <span className="tag-section">{c.section}</span>}
+          {c.section !== c.title && <span className="src-section">{c.section}</span>}
         </span>
-        <span className="tag-date">{c.archived ? "Replaced, shown to explain a change" : `In effect from ${formatDate(c.effectiveFrom)}`}</span>
+        {c.archived ? <span className="badge is-muted">Replaced</span> : <span className="badge is-ok">Quote verified</span>}
+        <span className="src-date">{c.archived ? "shown to explain a change" : `from ${formatDate(c.effectiveFrom)}`}</span>
+        <Chevron open={open} />
       </button>
       {open && (
-        <div className="tag-body">
+        <div className="src-body">
           {c.quotes.map((q) => (
             <blockquote key={q}>{q}</blockquote>
           ))}
-          <p className="tag-note">Checked word for word against the source.</p>
         </div>
       )}
     </li>
@@ -160,6 +254,13 @@ function Details({ r }: { r: AskResult }) {
       )}
     </div>
   );
+}
+
+function detailsSummary(r: AskResult): string {
+  const m = r.meta;
+  const cost = m.costUsd === null ? "" : ` · $${m.costUsd.toFixed(4)}`;
+  const n = m.retrieved.length;
+  return `${(m.latencyMs.total / 1000).toFixed(1)}s${cost} · ${n} ${n === 1 ? "passage" : "passages"}`;
 }
 
 const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -283,7 +384,7 @@ export function Answer({ text, status, result, supportEmail, onAsk, staff = fals
         <Thinking />
       ) : (
         <div className={`a-body${settled || stopped ? "" : " is-streaming"}`}>
-          <Body text={smooth.text} onCite={toggle} active={open} />
+          <Body text={smooth.text} onCite={toggle} active={open} markers={staff} />
         </div>
       )}
 
@@ -295,12 +396,29 @@ export function Answer({ text, status, result, supportEmail, onAsk, staff = fals
         </a>
       )}
 
-      {settled && result && result.sources.length > 0 && (
-        <ol className="tags" aria-label="Sources">
-          {result.sources.map((c) => (
-            <SourceTag key={c.chunkId} c={c} open={open === c.n} onToggle={() => toggle(c.n)} />
-          ))}
-        </ol>
+      {settled && result && result.sources.length > 0 &&
+        (staff ? (
+          <div className="srcs">
+            <p className="srcs-label">Sources</p>
+            <ol className="src-list">
+              {result.sources.map((c) => (
+                <SourceRow key={c.chunkId} c={c} open={open === c.n} onToggle={() => toggle(c.n)} />
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <SourcePills sources={result.sources} />
+        ))}
+
+      {settled && result && staff && (
+        <div className="made">
+          <button type="button" className="made-head" onClick={() => setShowDetails((v) => !v)} aria-expanded={showDetails}>
+            <span className="made-title">How this answer was made</span>
+            <span className="made-sum">{detailsSummary(result)}</span>
+            <Chevron open={showDetails} />
+          </button>
+          {showDetails && <Details r={result} />}
+        </div>
       )}
 
       {settled && result && result.followUps.length > 0 && (
@@ -333,14 +451,8 @@ export function Answer({ text, status, result, supportEmail, onAsk, staff = fals
           ) : (
             <span className="rate">{feedback === "error" ? "Feedback wasn't saved. The answer may have expired." : "Thanks, noted."}</span>
           )}
-          {staff && (
-            <button type="button" className="link" onClick={() => setShowDetails((s) => !s)} aria-expanded={showDetails}>
-              {showDetails ? "Hide details" : "How this answer was made"}
-            </button>
-          )}
         </div>
       )}
-      {settled && result && staff && showDetails && <Details r={result} />}
     </article>
   );
 }

@@ -33,7 +33,7 @@ export function App() {
   const [staff, setStaff] = useState<boolean>(readStaff);
   // bumping the key remounts the chat, which clears the conversation
   const [chatKey, setChatKey] = useState(0);
-  // the logo and "Ask" always lead to a fresh home screen. on the evals page
+  // "Ask the Studio" and "Ask" always lead to a fresh home screen. on the evals page
   // the hash change handles navigation; on the ask page the hash is already
   // "#/", so the browser does nothing and we reset the chat ourselves
   const goHome = () => {
@@ -62,10 +62,15 @@ export function App() {
   return (
     <>
       <header className="bar">
-        <a href="#/" className="brand" aria-label="Ask the Studio home" onClick={goHome}>
-          <img src="/parure-logo.svg" alt="Parure" width={108} height={26} />
-          <span className="brand-sub">Ask the Studio</span>
-        </a>
+        <div className="brand">
+          {/* the logo goes to the brand's own site, as on any shop page */}
+          <a href="https://parurelondon.com" target="_blank" rel="noopener noreferrer" aria-label="Parure London (opens in a new tab)">
+            <img src="/parure-logo.svg" alt="Parure" width={108} height={26} />
+          </a>
+          <a href="#/" className="brand-sub" onClick={goHome}>
+            Ask the Studio
+          </a>
+        </div>
         <nav aria-label="Main">
           {staff && (
             <>
