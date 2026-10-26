@@ -103,6 +103,13 @@ describe("ask pipeline", () => {
     expect(r.declineReason).toBe("unverified");
   });
 
+  it("reports an answer cut off by the token limit as too long", async () => {
+    const chat = new FakeChat(() => '{"answerable":true,"sentences":[{"sources":["S1"],"text":"You can', "q", true);
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answerable).toBe(false);
+    expect(r.declineReason).toBe("too_long");
+  });
+
   it("lays out list items as a list and keeps a closing line without a source", async () => {
     const chat = new FakeChat((m) => {
       const s = labelFor(m, "orders delivered on or after 1 January 2026");

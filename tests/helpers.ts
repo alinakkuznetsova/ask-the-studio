@@ -13,6 +13,7 @@ export class FakeChat implements ChatModel {
   constructor(
     private output: (messages: ChatMessage[]) => object | string,
     private rewrite = "rewritten question",
+    private truncated = false,
   ) {}
   async complete(messages: ChatMessage[]) {
     this.calls.push(messages);
@@ -23,7 +24,7 @@ export class FakeChat implements ChatModel {
     const out = this.output(messages);
     const text = typeof out === "string" ? out : JSON.stringify(out);
     for (let i = 0; i < text.length; i += 7) onDelta(text.slice(i, i + 7));
-    return { text, usage: { input: 1000, output: 100 } as Usage };
+    return { text, usage: { input: 1000, output: 100 } as Usage, truncated: this.truncated };
   }
 }
 

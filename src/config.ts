@@ -75,7 +75,9 @@ export const settings = {
   maxQuestionChars: 500,
   maxHistoryTurns: 6,
   maxHistoryChars: 1500,
-  maxAnswerTokens: 600,
+  // the json carries each sentence twice (text and quote) plus follow-ups,
+  // so a broad question ("how do returns work?") needs room. 600 cut those off
+  maxAnswerTokens: 1200,
 
   supportEmail: "hello@parurelondon.com",
 } as const;

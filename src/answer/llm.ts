@@ -21,7 +21,8 @@ export interface ChatModel {
     maxTokens: number,
     onDelta: (delta: string) => void,
     signal?: AbortSignal,
-  ): Promise<{ text: string; usage: Usage }>;
+    // truncated: the model hit maxTokens, so the json is cut off
+  ): Promise<{ text: string; usage: Usage; truncated?: boolean }>;
 }
 
 // reasoning-style models reject a temperature parameter
@@ -70,7 +71,9 @@ export class OpenAIChat implements ChatModel {
     );
     let text = "";
     let usage: Usage = { input: 0, output: 0 };
+    let truncated = false;
     for await (const chunk of stream) {
+      if (chunk.choices[0]?.finish_reason === "length") truncated = true;
       const delta = chunk.choices[0]?.delta?.content;
       if (delta) {
         text += delta;
@@ -78,6 +81,6 @@ export class OpenAIChat implements ChatModel {
       }
       if (chunk.usage) usage = { input: chunk.usage.prompt_tokens, output: chunk.usage.completion_tokens };
     }
-    return { text, usage };
+    return { text, usage, truncated };
   }
 }

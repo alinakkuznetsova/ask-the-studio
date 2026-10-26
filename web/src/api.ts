@@ -15,7 +15,7 @@ export interface Citation {
 export interface AskResult {
   answer: string;
   answerable: boolean;
-  declineReason?: "not_in_sources" | "off_topic" | "low_relevance" | "unverified";
+  declineReason?: "not_in_sources" | "off_topic" | "low_relevance" | "unverified" | "too_long";
   sources: Citation[];
   followUps: string[];
   meta: {

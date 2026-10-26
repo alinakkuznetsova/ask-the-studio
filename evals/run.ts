@@ -271,7 +271,7 @@ function markdown(full: typeof report, base: typeof report | null): string {
     ``,
     ...(full.results.filter((r) => !r.pass).map(
       (r) =>
-        `- **${r.id}**: ${r.error ?? [!r.declineCorrect ? (r.answerable ? "answered when it should decline" : "declined when it should answer") : "", ...r.factFailures, r.judge && (r.judge.correctness < 4 || !r.judge.grounded || !r.judge.focused) ? `judge: ${r.judge.reason}` : ""].filter(Boolean).join("; ")}`,
+        `- **${r.id}**: ${r.error ?? [!r.declineCorrect ? (r.answerable ? "answered when it should decline" : `declined when it should answer (${r.declineReason ?? "unknown"})`) : "", ...r.factFailures, r.judge && (r.judge.correctness < 4 || !r.judge.grounded || !r.judge.focused) ? `judge: ${r.judge.reason}` : ""].filter(Boolean).join("; ")}`,
     ) || []),
     full.results.every((r) => r.pass) ? "None." : "",
     ``,

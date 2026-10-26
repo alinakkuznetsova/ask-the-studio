@@ -240,6 +240,7 @@ async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions):
   const generateMs = performance.now() - tGen;
 
   // 5. parse and validate. anything malformed becomes a safe decline
+  if (gen.truncated) return decline("too_long", generateMs);
   let parsed: z.infer<typeof ModelOutput>;
   try {
     parsed = ModelOutput.parse(JSON.parse(gen.text));

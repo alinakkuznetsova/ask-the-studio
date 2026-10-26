@@ -50,7 +50,7 @@ export interface Citation {
   url?: string;
 }
 
-export type DeclineReason = "not_in_sources" | "off_topic" | "low_relevance" | "unverified";
+export type DeclineReason = "not_in_sources" | "off_topic" | "low_relevance" | "unverified" | "too_long";
 
 export interface AskMeta {
   traceId: string;

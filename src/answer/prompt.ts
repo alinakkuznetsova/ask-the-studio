@@ -127,5 +127,8 @@ export const DECLINES = {
   // content for. this wording fits both
   low_relevance: `I can only help with questions about Parure London: our jewellery, orders, delivery, returns and care. If your question is about one of those, email ${settings.supportEmail} and the studio will reply within 2 working days.`,
   unverified: `I couldn't back that answer up with our published information, so I'd rather not guess. Please email ${settings.supportEmail} and the studio will reply within 2 working days.`,
+  // the answer ran past the token limit and was cut off mid-json. reported
+  // separately from unverified so it shows up in logs and evals, not hidden
+  too_long: `That needs a longer answer than I can give here, so I'd rather not give you half of it. Please email ${settings.supportEmail} and the studio will reply within 2 working days.`,
   off_topic: `I can only help with questions about Parure London: our jewellery, orders, delivery, returns and care. Is there anything about Parure I can help with?`,
 } as const;

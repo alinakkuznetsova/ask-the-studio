@@ -390,7 +390,7 @@ export function Answer({ text, status, result, supportEmail, onAsk, staff = fals
 
       {stopped && <p className="stopped">Stopped.</p>}
 
-      {settled && declined && (result.declineReason === "not_in_sources" || result.declineReason === "unverified") && (
+      {settled && declined && (result.declineReason === "not_in_sources" || result.declineReason === "unverified" || result.declineReason === "too_long") && (
         <a className="mail" href={`mailto:${supportEmail}`}>
           Email the studio
         </a>
