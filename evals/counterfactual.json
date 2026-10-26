@@ -1,0 +1,181 @@
+{
+  "version": "2026-10-26.1",
+  "notes": "Each case edits facts in a temporary copy of the knowledge base, then asks the same question against the original and the edited copy. A grounded system must follow the edit. Removal cases delete a fact, and the system must not fill the gap from memory or from an archived policy.",
+  "cases": [
+    {
+      "id": "cf1-return-window",
+      "question": "How long do I have to return something?",
+      "edits": [
+        {
+          "file": "returns-policy-2026.md",
+          "find": "30 days",
+          "replace": "45 days"
+        },
+        {
+          "file": "faq.md",
+          "find": "30 days",
+          "replace": "45 days"
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "30 days"
+        ],
+        "mustNotInclude": [
+          "45 days"
+        ]
+      },
+      "edited": {
+        "mustInclude": [
+          "45 days"
+        ],
+        "mustNotInclude": [
+          "30 days"
+        ]
+      }
+    },
+    {
+      "id": "cf2-marine-set-price",
+      "question": "How much is the MARINE set?",
+      "edits": [
+        {
+          "file": "marine-collection.md",
+          "find": "£235",
+          "replace": "£249"
+        },
+        {
+          "file": "marine-collection.md",
+          "find": "saving £37",
+          "replace": "saving £23"
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "£235"
+        ],
+        "mustNotInclude": [
+          "£249"
+        ]
+      },
+      "edited": {
+        "mustInclude": [
+          "£249"
+        ],
+        "mustNotInclude": [
+          "£235"
+        ]
+      }
+    },
+    {
+      "id": "cf3-warranty-length",
+      "question": "How long is the warranty on your jewellery?",
+      "edits": [
+        {
+          "file": "warranty-and-repairs.md",
+          "find": "12-month",
+          "replace": "24-month"
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "12-month|12 months|twelve months"
+        ],
+        "mustNotInclude": [
+          "24-month|24 months"
+        ]
+      },
+      "edited": {
+        "mustInclude": [
+          "24-month|24 months|two years"
+        ],
+        "mustNotInclude": [
+          "12-month|12 months|twelve months"
+        ]
+      }
+    },
+    {
+      "id": "cf4-free-delivery",
+      "question": "When is UK delivery free?",
+      "edits": [
+        {
+          "file": "shipping.md",
+          "find": "Free on orders over £100",
+          "replace": "Free on orders over £150"
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "£100"
+        ],
+        "mustNotInclude": [
+          "£150"
+        ]
+      },
+      "edited": {
+        "mustInclude": [
+          "£150"
+        ],
+        "mustNotInclude": [
+          "£100",
+          "£75"
+        ]
+      }
+    },
+    {
+      "id": "cf5-reply-time",
+      "question": "How quickly do you reply to emails?",
+      "edits": [
+        {
+          "file": "contact.md",
+          "find": "within two working days",
+          "replace": "within three working days"
+        },
+        {
+          "file": "returns-policy-2026.md",
+          "find": "within two working days",
+          "replace": "within three working days"
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "two working days|2 working days"
+        ],
+        "mustNotInclude": [
+          "three working days|3 working days"
+        ]
+      },
+      "edited": {
+        "mustInclude": [
+          "three working days|3 working days"
+        ],
+        "mustNotInclude": [
+          "two working days|2 working days"
+        ]
+      }
+    },
+    {
+      "id": "cf6-europe-price-removed",
+      "question": "How much is delivery to Europe?",
+      "edits": [
+        {
+          "file": "shipping.md",
+          "find": "- **Europe:** £9.95, 4 to 7 working days.\n",
+          "replace": ""
+        }
+      ],
+      "original": {
+        "mustInclude": [
+          "£9.95"
+        ],
+        "mustNotInclude": []
+      },
+      "edited": {
+        "mustInclude": [],
+        "mustNotInclude": [
+          "£9.95",
+          "£8.95"
+        ]
+      }
+    }
+  ]
+}

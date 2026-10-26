@@ -36,11 +36,13 @@ export interface KnowledgeIndex {
   embedder: CachedEmbedder;
 }
 
+// kbDir is overridable so evals can index an edited copy of the knowledge base
 export async function buildIndex(
   config: RetrievalConfig = DEFAULT_RETRIEVAL,
   embedder?: Embedder,
+  kbDir: string = settings.kbDir,
 ): Promise<KnowledgeIndex> {
-  const docs = await loadDocs(settings.kbDir);
+  const docs = await loadDocs(kbDir);
   const chunks = chunkDocs(docs, settings);
   const inner = embedder ?? new OpenAIEmbedder(openaiClient(), env().EMBEDDING_MODEL);
   const cached = new CachedEmbedder(inner, path.join(settings.cacheDir, `embeddings-${inner.model}.json`));
