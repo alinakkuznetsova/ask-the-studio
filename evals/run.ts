@@ -5,6 +5,7 @@
 //   npm run eval -- --gate            exit 1 if any threshold in thresholds.json fails (ci)
 //   npm run eval -- --only c1-return-window,o2-prompt-injection
 //   npm run eval -- --no-follow-ups   skip asking each suggested follow-up (faster)
+//   npm run eval -- --repeat 3        run every case 3 times; report mean, min and max, and flaky cases
 import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -16,7 +17,7 @@ import { BASELINE_RETRIEVAL, buildIndex, DEFAULT_RETRIEVAL, openaiClient } from 
 import { judge, JUDGE_VERSION } from "./judge.js";
 import { propagateAttributes } from "@langfuse/tracing";
 import { initTracing, score, shutdownTracing } from "../src/observability/tracing.js";
-import { DatasetSchema, scoreCase, summarise, type CaseResult, type Summary } from "./score.js";
+import { DatasetSchema, flakyCases, scoreCase, spread, summarise, type CaseResult, type Summary } from "./score.js";
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(`--${name}`);
@@ -28,6 +29,7 @@ const opt = (name: string) => {
 const variant = opt("variant") === "baseline" ? "baseline" : "full";
 const only = opt("only")?.split(",");
 const concurrency = Number(opt("concurrency") ?? 4);
+const repeats = Math.max(1, Math.floor(Number(opt("repeat") ?? 1)) || 1);
 const here = path.dirname(new URL(import.meta.url).pathname);
 
 const dataset = DatasetSchema.parse(JSON.parse(await fs.readFile(path.join(here, "dataset.json"), "utf8")));
@@ -46,13 +48,13 @@ const { retriever } = await buildIndex(retrievalConfig);
 const chunkById = new Map(retriever.chunks.map((c) => [c.id, c]));
 
 if (tracing) console.log("tracing to langfuse: each case is a trace with its scores");
-console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, judge=${JUDGE_VERSION}, as of ${dataset.asOf}\n`);
+console.log(`\nask the studio evals: ${cases.length} cases${repeats > 1 ? ` x ${repeats} runs` : ""}, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, judge=${JUDGE_VERSION}, as of ${dataset.asOf}\n`);
 
 let judgeCost = 0;
-async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
+async function runCase(c: (typeof cases)[number], repeat: number): Promise<CaseResult> {
   try {
     const r = await propagateAttributes(
-      { tags: ["eval", variant, c.category], metadata: { caseId: c.id, runId, promptVersion: PROMPT_VERSION } },
+      { tags: ["eval", variant, c.category], metadata: { caseId: c.id, runId, repeat: String(repeat), promptVersion: PROMPT_VERSION } },
       () => ask(c.question, { retriever, chat }, { history: c.history, now: new Date(`${dataset.asOf}T12:00:00Z`) }),
     );
     let j = null;
@@ -96,20 +98,37 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
 }
 
 // small worker pool: fast, but gentle on rate limits
-const results: CaseResult[] = new Array(cases.length);
-let next = 0;
-await Promise.all(
-  Array.from({ length: Math.min(concurrency, cases.length) }, async () => {
-    while (next < cases.length) {
-      const i = next++;
-      results[i] = await runCase(cases[i]!);
-      const r = results[i]!;
-      process.stdout.write(`${r.pass ? "✓" : "✗"} ${r.id}${r.error ? `  error: ${r.error}` : ""}\n`);
-    }
-  }),
-);
+async function runAll(repeat: number): Promise<CaseResult[]> {
+  const out: CaseResult[] = new Array(cases.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, cases.length) }, async () => {
+      while (next < cases.length) {
+        const i = next++;
+        out[i] = await runCase(cases[i]!, repeat);
+        const r = out[i]!;
+        process.stdout.write(`${repeats > 1 ? `[run ${repeat}] ` : ""}${r.pass ? "✓" : "✗"} ${r.id}${r.error ? `  error: ${r.error}` : ""}\n`);
+      }
+    }),
+  );
+  return out;
+}
 
+const runs: CaseResult[][] = [];
+for (let rep = 1; rep <= repeats; rep++) runs.push(await runAll(rep));
+// the first run is the one saved case by case (dashboard, labelling); the
+// spread across all runs is saved alongside it
+const results = runs[0]!;
 const summary = summarise(results);
+const SPREAD_KEYS: (keyof Summary)[] = ["passRate", "declineAccuracy", "factAccuracy", "correctness", "groundedness", "focus", "retrievalRecall"];
+const repeatStats =
+  repeats > 1
+    ? {
+        runs: repeats,
+        metrics: Object.fromEntries(SPREAD_KEYS.map((k) => [k, spread(runs.map(summarise), k)])),
+        flaky: flakyCases(runs),
+      }
+    : null;
 
 // ---------- reporting ----------
 const f = (x: number | null, kind: "pct" | "num" | "ms" | "usd" = "pct") =>
@@ -162,6 +181,18 @@ const deltaStr = (k: keyof Summary, kind: "pct" | "num" | "ms" | "usd") => {
 console.log(`\nsummary (${variant})${previous ? `, change vs previous run (${previous.runAt})` : ""}`);
 console.table(Object.fromEntries(METRICS.map(([k, label, kind]) => [label, { value: f(summary[k] as number | null, kind), change: deltaStr(k, kind) }])));
 console.log(`false declines: ${summary.falseDeclines}, false answers: ${summary.falseAnswers}, judge cost: $${judgeCost.toFixed(4)}`);
+if (repeatStats) {
+  console.log(`\nacross ${repeats} runs`);
+  console.table(
+    Object.fromEntries(
+      Object.entries(repeatStats.metrics).map(([k, v]) => {
+        const kind = k === "correctness" ? "num" : "pct";
+        return [k, { mean: f(v.mean, kind), min: f(v.min, kind), max: f(v.max, kind) }];
+      }),
+    ),
+  );
+  console.log(repeatStats.flaky.length ? `flaky: ${repeatStats.flaky.map((x) => `${x.id} (${x.passed}/${x.of})`).join(", ")}` : "no flaky cases");
+}
 
 const report = {
   runAt: new Date().toISOString(),
@@ -173,6 +204,7 @@ const report = {
   judgeVersion: JUDGE_VERSION,
   retrieval: retrievalConfig,
   summary,
+  repeat: repeatStats,
   judgeCostUsd: judgeCost,
   previous: previous ? { runAt: previous.runAt, summary: previous.summary } : null,
   results,
@@ -210,6 +242,23 @@ function markdown(full: typeof report, base: typeof report | null): string {
     `| False answers | ${base ? `${base.summary.falseAnswers} | ` : ""}${full.summary.falseAnswers} |`,
     ``,
     base ? `Baseline: vector-only retrieval, no version filtering, no contextual headers. Full: hybrid (vector + BM25, RRF), archived docs filtered, contextual headers.\n` : ``,
+    ...(full.repeat
+      ? [
+          `## Across ${full.repeat.runs} runs`,
+          ``,
+          `| Metric | Mean | Min | Max |`,
+          `|---|---|---|---|`,
+          ...Object.entries(full.repeat.metrics).map(([k, v]) => {
+            const kind = k === "correctness" ? "num" : "pct";
+            return `| ${k} | ${f(v.mean, kind)} | ${f(v.min, kind)} | ${f(v.max, kind)} |`;
+          }),
+          ``,
+          full.repeat.flaky.length
+            ? `Flaky cases: ${full.repeat.flaky.map((x) => `${x.id} (passed ${x.passed} of ${x.of})`).join(", ")}.`
+            : `No flaky cases.`,
+          ``,
+        ]
+      : []),
     `## By category`,
     ``,
     `| Category | Cases | ${base ? "Baseline | " : ""}Full |`,

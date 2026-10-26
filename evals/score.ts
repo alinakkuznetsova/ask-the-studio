@@ -222,3 +222,27 @@ export function summarise(results: CaseResult[]): Summary {
     byCategory,
   };
 }
+
+// ---------- repeated runs ----------
+// the model is not deterministic, so one run can flatter or punish a change.
+// with --repeat n, each metric is reported as mean, min and max across runs,
+// and cases that passed in some runs but not others are listed as flaky
+
+export interface Spread {
+  mean: number | null;
+  min: number | null;
+  max: number | null;
+}
+
+export function spread(summaries: Summary[], key: keyof Summary): Spread {
+  const xs = summaries.map((s) => s[key]).filter((x): x is number => typeof x === "number");
+  if (!xs.length) return { mean: null, min: null, max: null };
+  return { mean: xs.reduce((a, b) => a + b, 0) / xs.length, min: Math.min(...xs), max: Math.max(...xs) };
+}
+
+export function flakyCases(runs: CaseResult[][]): { id: string; passed: number; of: number }[] {
+  const ids = runs[0]?.map((r) => r.id) ?? [];
+  return ids
+    .map((id) => ({ id, passed: runs.filter((run) => run.find((r) => r.id === id)?.pass).length, of: runs.length }))
+    .filter((x) => x.passed > 0 && x.passed < x.of);
+}

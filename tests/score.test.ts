@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
-import { checkFacts, containsTerm, DatasetSchema, scoreCase, summarise, type EvalCase } from "../evals/score.js";
+import { checkFacts, containsTerm, DatasetSchema, flakyCases, scoreCase, spread, summarise, type EvalCase } from "../evals/score.js";
 import { loadDocs } from "../src/kb/loader.js";
 import { settings } from "../src/config.js";
 import type { AskResult } from "../src/types.js";
@@ -84,5 +84,19 @@ describe("eval scoring", () => {
     for (const c of ds.cases) for (const d of [...c.requiredDocs.flat(), ...c.acceptableDocs]) expect(ids, `${c.id}: ${d}`).toContain(d);
     expect(new Set(ds.cases.map((c) => c.id)).size).toBe(ds.cases.length);
     expect(ds.cases.length).toBeGreaterThanOrEqual(20);
+  });
+});
+
+describe("repeated runs", () => {
+  const run = (passes: boolean[]) =>
+    passes.map((pass, i) => ({ ...scoreCase({ ...base, id: `c${i}` }, result({ answer: "£100 [1]", retrieved: ["shipping#a"] }), null), pass }));
+
+  it("reports mean, min and max of a metric across runs", () => {
+    const summaries = [run([true, true]), run([true, false])].map(summarise);
+    expect(spread(summaries, "passRate")).toEqual({ mean: 0.75, min: 0.5, max: 1 });
+  });
+
+  it("lists cases that passed in some runs but not others", () => {
+    expect(flakyCases([run([true, true, false]), run([true, false, false])])).toEqual([{ id: "c1", passed: 1, of: 2 }]);
   });
 });
