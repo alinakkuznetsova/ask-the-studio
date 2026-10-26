@@ -26,6 +26,7 @@ export const DatasetSchema = z.object({
 export interface Judgement {
   correctness: number; // 1 to 5
   grounded: boolean; // every claim supported by the cited sources
+  focused: boolean; // sticks to the question, no padding or system wording
   reason: string;
 }
 
@@ -117,8 +118,8 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     : null;
 
   // a case passes when the decline decision is right, the hard facts hold,
-  // and (for answers) the judge rates it correct and grounded
-  const judgeOk = !judge || (judge.correctness >= 4 && judge.grounded);
+  // and (for answers) the judge rates it correct, grounded and focused
+  const judgeOk = !judge || (judge.correctness >= 4 && judge.grounded && judge.focused);
   const pass = declineCorrect && factsPass !== false && (r.answerable ? judgeOk : true);
 
   return {
@@ -165,6 +166,7 @@ export interface Summary {
   factAccuracy: number | null;
   correctness: number | null; // judge mean, 1 to 5
   groundedness: number | null; // share of answers the judge rated fully supported
+  focus: number | null; // share of answers the judge rated focused
   quoteVerification: number | null;
   sentenceCoverage: number | null;
   citationPrecision: number | null;
@@ -193,6 +195,7 @@ export function summarise(results: CaseResult[]): Summary {
     factAccuracy: pct(vals((r) => r.factsPass)),
     correctness: mean(answered.map((r) => r.judge!.correctness)),
     groundedness: pct(answered.map((r) => r.judge!.grounded)),
+    focus: pct(answered.map((r) => r.judge!.focused)),
     quoteVerification: mean(vals((r) => r.quoteVerification)),
     sentenceCoverage: mean(vals((r) => r.sentenceCoverage)),
     citationPrecision: mean(vals((r) => r.citationPrecision)),

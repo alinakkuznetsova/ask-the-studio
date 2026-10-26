@@ -118,6 +118,7 @@ export interface EvalSummary {
   factAccuracy: number | null;
   correctness: number | null;
   groundedness: number | null;
+  focus: number | null;
   quoteVerification: number | null;
   sentenceCoverage: number | null;
   citationPrecision: number | null;
@@ -139,7 +140,7 @@ export interface EvalCaseResult {
   declineCorrect: boolean;
   factsPass: boolean | null;
   factFailures: string[];
-  judge: { correctness: number; grounded: boolean; reason: string } | null;
+  judge: { correctness: number; grounded: boolean; focused: boolean; reason: string } | null;
   pass: boolean;
   latencyMs: number;
   sources: string[];
@@ -152,6 +153,7 @@ export interface EvalReport {
   datasetVersion: string;
   promptVersion: string;
   models: { chat: string; embedding: string; judge: string };
+  judgeVersion?: string;
   summary: EvalSummary;
   previous: { runAt: string; summary: EvalSummary } | null;
   baseline: { runAt: string; summary: EvalSummary } | null;

@@ -12,7 +12,7 @@ import { ask } from "../src/answer/pipeline.js";
 import { OpenAIChat } from "../src/answer/llm.js";
 import { PROMPT_VERSION } from "../src/answer/prompt.js";
 import { BASELINE_RETRIEVAL, buildIndex, DEFAULT_RETRIEVAL, openaiClient } from "../src/kb/build.js";
-import { judge } from "./judge.js";
+import { judge, JUDGE_VERSION } from "./judge.js";
 import { DatasetSchema, scoreCase, summarise, type CaseResult, type Summary } from "./score.js";
 
 const args = process.argv.slice(2);
@@ -38,7 +38,7 @@ const retrievalConfig = variant === "baseline" ? BASELINE_RETRIEVAL : DEFAULT_RE
 const { retriever } = await buildIndex(retrievalConfig);
 const chunkById = new Map(retriever.chunks.map((c) => [c.id, c]));
 
-console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, as of ${dataset.asOf}\n`);
+console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, judge=${JUDGE_VERSION}, as of ${dataset.asOf}\n`);
 
 let judgeCost = 0;
 async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
@@ -53,7 +53,7 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
         sources: r.sources.map((s) => ({ title: `${s.title} > ${s.section}`, text: chunkById.get(s.chunkId)?.text ?? "" })),
       });
       judgeCost += costUsd(cfg.JUDGE_MODEL, res.usage.input, res.usage.output) ?? 0;
-      j = { correctness: res.correctness, grounded: res.grounded, reason: res.reason };
+      j = { correctness: res.correctness, grounded: res.grounded, focused: res.focused, reason: res.reason };
     }
     return scoreCase(c, r, j);
   } catch (err) {
@@ -94,6 +94,7 @@ const METRICS: [keyof Summary, string, "pct" | "num" | "ms" | "usd"][] = [
   ["factAccuracy", "Must-include / must-not facts", "pct"],
   ["correctness", "Correctness (judge, 1 to 5)", "num"],
   ["groundedness", "Groundedness (judge)", "pct"],
+  ["focus", "Focused, no padding (judge)", "pct"],
   ["quoteVerification", "Quotes verified verbatim", "pct"],
   ["sentenceCoverage", "Sentences with a verified source", "pct"],
   ["citationPrecision", "Citation precision", "pct"],
@@ -110,7 +111,7 @@ console.table(
     decline: r.declineCorrect ? "ok" : r.answerable ? "answered" : "declined",
     recall: r.retrievalRecall === null ? "" : f(r.retrievalRecall),
     facts: r.factsPass === null ? "" : r.factsPass ? "ok" : r.factFailures.join("; "),
-    judge: r.judge ? `${r.judge.correctness}/5${r.judge.grounded ? "" : " ungrounded"}` : "",
+    judge: r.judge ? `${r.judge.correctness}/5${r.judge.grounded ? "" : " ungrounded"}${r.judge.focused ? "" : " unfocused"}` : "",
     ms: r.latencyMs,
   })),
 );
@@ -140,6 +141,7 @@ const report = {
   asOf: dataset.asOf,
   promptVersion: PROMPT_VERSION,
   models: { chat: cfg.CHAT_MODEL, embedding: cfg.EMBEDDING_MODEL, judge: cfg.JUDGE_MODEL },
+  judgeVersion: JUDGE_VERSION,
   retrieval: retrievalConfig,
   summary,
   judgeCostUsd: judgeCost,
@@ -170,7 +172,7 @@ function markdown(full: typeof report, base: typeof report | null): string {
   const lines = [
     `# Eval report`,
     ``,
-    `Run ${full.runAt}, dataset ${full.datasetVersion}, prompt ${full.promptVersion}, chat model ${full.models.chat}, judge ${full.models.judge}.`,
+    `Run ${full.runAt}, dataset ${full.datasetVersion}, prompt ${full.promptVersion}, chat model ${full.models.chat}, judge ${full.models.judge} (rubric ${full.judgeVersion}).`,
     ``,
     `| Metric | ${base ? "Baseline | " : ""}Full system |`,
     `|---|${base ? "---|" : ""}---|`,
@@ -191,7 +193,7 @@ function markdown(full: typeof report, base: typeof report | null): string {
     ``,
     ...(full.results.filter((r) => !r.pass).map(
       (r) =>
-        `- **${r.id}**: ${r.error ?? [!r.declineCorrect ? (r.answerable ? "answered when it should decline" : "declined when it should answer") : "", ...r.factFailures, r.judge && (r.judge.correctness < 4 || !r.judge.grounded) ? `judge: ${r.judge.reason}` : ""].filter(Boolean).join("; ")}`,
+        `- **${r.id}**: ${r.error ?? [!r.declineCorrect ? (r.answerable ? "answered when it should decline" : "declined when it should answer") : "", ...r.factFailures, r.judge && (r.judge.correctness < 4 || !r.judge.grounded || !r.judge.focused) ? `judge: ${r.judge.reason}` : ""].filter(Boolean).join("; ")}`,
     ) || []),
     full.results.every((r) => r.pass) ? "None." : "",
     ``,

@@ -180,6 +180,7 @@ Each case lists the documents retrieval must find, the documents it may cite, fa
 | Key facts | Required facts present and banned claims absent (word-boundary matching, alternatives allowed) |
 | Correctness | LLM judge, 1 to 5 against the reference answer |
 | Groundedness | LLM judge: every claim supported by the cited sources' text |
+| Focus | LLM judge: answers only what was asked, with no padding, repetition or talk of "sources" |
 | Quote verification | Share of the model's quotes that matched their source verbatim |
 | Sentence coverage | Share of answer sentences backed by at least one verified source |
 | Citation precision | Share of cited documents that are relevant |

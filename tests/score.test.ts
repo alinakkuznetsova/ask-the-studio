@@ -41,7 +41,7 @@ describe("eval scoring", () => {
       checked: 1,
       sources: [{ n: 1, chunkId: "shipping#all", docId: "shipping", title: "", section: "", quotes: ["q"], archived: false, effectiveFrom: "" }],
     });
-    const s = scoreCase(base, r, { correctness: 5, grounded: true, reason: "" });
+    const s = scoreCase(base, r, { correctness: 5, grounded: true, focused: true, reason: "" });
     expect(s.pass).toBe(true);
     expect(s.retrievalRecall).toBe(1);
     expect(s.citationPrecision).toBe(1);
@@ -50,7 +50,7 @@ describe("eval scoring", () => {
 
   it("fails an answer that lists sources but never numbers them inline", () => {
     const src = { n: 1, chunkId: "shipping#all", docId: "shipping", title: "", section: "", quotes: ["q"], archived: false, effectiveFrom: "" };
-    const s = scoreCase(base, result({ answer: "Free over £100.", sources: [src] }), { correctness: 5, grounded: true, reason: "" });
+    const s = scoreCase(base, result({ answer: "Free over £100.", sources: [src] }), { correctness: 5, grounded: true, focused: true, reason: "" });
     expect(s.factFailures).toContain("no inline citation numbers");
     expect(s.pass).toBe(false);
   });
@@ -58,8 +58,14 @@ describe("eval scoring", () => {
   it("accepts a partial answer that points to support, or a decline", () => {
     const c: EvalCase = { ...base, expect: "partial_or_decline", requiredDocs: [], mustInclude: [], mustNotInclude: [] };
     expect(scoreCase(c, result({ answerable: false }), null).declineCorrect).toBe(true);
-    expect(scoreCase(c, result({ answer: "Not listed, email hello@parurelondon.com" }), { correctness: 4, grounded: true, reason: "" }).declineCorrect).toBe(true);
+    expect(scoreCase(c, result({ answer: "Not listed, email hello@parurelondon.com" }), { correctness: 4, grounded: true, focused: true, reason: "" }).declineCorrect).toBe(true);
     expect(scoreCase(c, result({ answer: "It's 45cm" }), null).declineCorrect).toBe(false);
+  });
+
+  it("fails an answer the judge finds unfocused", () => {
+    const src = { n: 1, chunkId: "shipping#all", docId: "shipping", title: "", section: "", quotes: ["q"], archived: false, effectiveFrom: "" };
+    const s = scoreCase(base, result({ answer: "Free over £100 [1].", sources: [src] }), { correctness: 5, grounded: true, focused: false, reason: "pads" });
+    expect(s.pass).toBe(false);
   });
 
   it("summarises false declines and answers", () => {
