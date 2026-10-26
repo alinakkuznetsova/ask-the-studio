@@ -24,6 +24,13 @@ describe("chunkDoc", () => {
     expect(chunks[0]!.text).not.toContain("Doc > Alpha");
   });
 
+  it("keeps a policy whole up to its own limit, but splits other long docs", () => {
+    const body = "# Doc\n\n## Alpha\none two three four five six\n\n## Beta\nseven eight nine ten eleven twelve thirteen fourteen fifteen";
+    const withPolicyLimit = { ...opts, wholePolicyMaxWords: 50 };
+    expect(chunkDoc(doc(body), withPolicyLimit)).toHaveLength(1);
+    expect(chunkDoc(doc(body, { type: "guide" }), withPolicyLimit)).toHaveLength(2);
+  });
+
   it("marks superseded docs as archived in the header and flag", () => {
     const chunks = chunkDoc(doc("old policy", { supersededBy: "new" }), opts);
     expect(chunks[0]!.archived).toBe(true);

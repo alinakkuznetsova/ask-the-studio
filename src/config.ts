@@ -59,6 +59,7 @@ export const settings = {
 
   // chunking
   wholeDocMaxWords: 220, // short docs (product pages) stay as one chunk
+  wholePolicyMaxWords: 400, // a whole policy, so its conditions travel together
   sectionMinWords: 35, // smaller neighbouring sections get merged
   sectionMaxWords: 300, // long sections get split on paragraphs
 

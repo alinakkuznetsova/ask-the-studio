@@ -13,6 +13,10 @@ import type { Chunk, Doc } from "../types.js";
 
 export interface ChunkOptions {
   wholeDocMaxWords: number;
+  // policies are kept whole up to this length: their sections qualify each
+  // other (the returns window, then the exceptions, then sets), and split
+  // up, an answer could cite the exception without the window it applies to
+  wholePolicyMaxWords?: number;
   sectionMinWords: number;
   sectionMaxWords: number;
 }
@@ -129,7 +133,8 @@ export function chunkDoc(doc: Doc, opts: ChunkOptions): Chunk[] {
     url: doc.url,
   };
 
-  if (wordCount(doc.body) <= opts.wholeDocMaxWords) {
+  const wholeMax = doc.type === "policy" ? Math.max(opts.wholeDocMaxWords, opts.wholePolicyMaxWords ?? 0) : opts.wholeDocMaxWords;
+  if (wordCount(doc.body) <= wholeMax) {
     const text = doc.body.replace(/^#\s+.*\n?/m, "").trim();
     return [
       {
