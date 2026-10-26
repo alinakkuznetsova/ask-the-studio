@@ -248,6 +248,8 @@ Thumbs up and down in the UI are stored with the redacted question, answer and s
 
 ## Security
 
+The full threat model, with where each mitigation lives and how it is tested, is in [docs/SECURITY.md](docs/SECURITY.md).
+
 | Risk | Mitigation |
 |---|---|
 | API key exposure | Server-side only, from environment variables (Railway secrets). Never in code, the repo or the browser. `.env` is git-ignored. Use a dedicated OpenAI project key with a spend limit. |
