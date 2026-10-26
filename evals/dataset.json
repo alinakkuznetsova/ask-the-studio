@@ -1,6 +1,7 @@
 {
-  "version": "2026-10-26.1",
-  "notes": "requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
+  "version": "2026-10-26.2",
+  "asOf": "2026-10-26",
+  "notes": "asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
     {
       "id": "s1-solar-necklace-price",

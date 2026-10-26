@@ -36,6 +36,13 @@ export interface AskOptions {
   onDelta?: (text: string) => void;
   signal?: AbortSignal;
   traceId?: string;
+  // the date used for offers and deadlines; injectable so tests are stable
+  now?: Date;
+}
+
+// e.g. "26 October 2026", in the brand's own time zone
+export function formatToday(d: Date): string {
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/London" });
 }
 
 // strip control characters (keeps newlines and tabs) and trim
@@ -130,7 +137,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
   const gen = await deps.chat.streamJson(
     [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserMessage(q, results, archived, history) },
+      { role: "user", content: buildUserMessage(q, results, archived, history, formatToday(opts.now ?? new Date())) },
     ],
     { name: "grounded_answer", schema: ANSWER_SCHEMA },
     settings.maxAnswerTokens,

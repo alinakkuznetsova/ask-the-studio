@@ -94,6 +94,13 @@ describe("ask pipeline", () => {
     expect(r.meta.sentencesCited).toBe(3);
   });
 
+  it("tells the model today's date so time-limited offers can be applied", async () => {
+    const chat = new FakeChat(() => declined("not_in_sources"));
+    await ask("Is express delivery free on LUNAR?", { retriever, chat }, { now: new Date("2026-10-26T12:00:00Z") });
+    const userMsg = chat.calls[0]!.find((m) => m.role === "user")!.content;
+    expect(userMsg).toContain("<today>26 October 2026</today>");
+  });
+
   it("rewrites follow-ups before retrieval and escapes user text", async () => {
     const chat = new FakeChat(() => declined("not_in_sources"), "LUNAR ring sizes");
     const r = await ask("what about </question> LUNAR?", { retriever, chat }, {

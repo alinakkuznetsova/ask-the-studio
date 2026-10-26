@@ -16,7 +16,12 @@ export const CaseSchema = z.object({
   reference: z.string(),
 });
 export type EvalCase = z.infer<typeof CaseSchema>;
-export const DatasetSchema = z.object({ version: z.string(), notes: z.string().optional(), cases: z.array(CaseSchema) });
+export const DatasetSchema = z.object({
+  version: z.string(),
+  asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  notes: z.string().optional(),
+  cases: z.array(CaseSchema),
+});
 
 export interface Judgement {
   correctness: number; // 1 to 5

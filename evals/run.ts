@@ -38,12 +38,12 @@ const retrievalConfig = variant === "baseline" ? BASELINE_RETRIEVAL : DEFAULT_RE
 const { retriever } = await buildIndex(retrievalConfig);
 const chunkById = new Map(retriever.chunks.map((c) => [c.id, c]));
 
-console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}\n`);
+console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, as of ${dataset.asOf}\n`);
 
 let judgeCost = 0;
 async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
   try {
-    const r = await ask(c.question, { retriever, chat }, { history: c.history });
+    const r = await ask(c.question, { retriever, chat }, { history: c.history, now: new Date(`${dataset.asOf}T12:00:00Z`) });
     let j = null;
     if (r.answerable) {
       const res = await judge(judgeModel, {
@@ -137,6 +137,7 @@ const report = {
   runAt: new Date().toISOString(),
   variant,
   datasetVersion: dataset.version,
+  asOf: dataset.asOf,
   promptVersion: PROMPT_VERSION,
   models: { chat: cfg.CHAT_MODEL, embedding: cfg.EMBEDDING_MODEL, judge: cfg.JUDGE_MODEL },
   retrieval: retrievalConfig,
