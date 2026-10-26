@@ -1,0 +1,38 @@
+{
+  "name": "ask-the-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "grounded q&a assistant for parure london with citations, evals and a branded ui",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:web": "npm --prefix web run dev",
+    "build": "npm run build:web && tsc -p tsconfig.build.json",
+    "build:web": "npm --prefix web ci && npm --prefix web run build",
+    "start": "node dist/src/index.js",
+    "ingest": "tsx scripts/ingest.ts",
+    "eval": "tsx evals/run.ts",
+    "eval:baseline": "tsx evals/run.ts --variant baseline",
+    "feedback:export": "tsx scripts/feedback-to-evals.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "dotenv": "18.0.9",
+    "hono": "4.13.14",
+    "openai": "7.43.0",
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

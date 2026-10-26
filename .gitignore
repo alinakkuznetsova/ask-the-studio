@@ -1,0 +1,12 @@
+node_modules/
+dist/
+web/dist/
+web/node_modules/
+.env
+.env.*
+!.env.example
+.cache/
+data/
+*.log
+.DS_Store
+evals/reports/runs/
