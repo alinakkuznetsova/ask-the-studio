@@ -88,6 +88,15 @@ describe("eval scoring", () => {
     expect(new Set(ds.cases.map((c) => c.id)).size).toBe(ds.cases.length);
     expect(ds.cases.length).toBeGreaterThanOrEqual(20);
   });
+
+  it("held-out set is valid, references real docs and shares no ids with the main set", async () => {
+    const main = DatasetSchema.parse(JSON.parse(fs.readFileSync("evals/dataset.json", "utf8")));
+    const held = DatasetSchema.parse(JSON.parse(fs.readFileSync("evals/heldout.json", "utf8")));
+    const ids = new Set((await loadDocs(settings.kbDir)).map((d) => d.id));
+    for (const c of held.cases) for (const d of [...c.requiredDocs.flat(), ...c.acceptableDocs]) expect(ids, `${c.id}: ${d}`).toContain(d);
+    const mainIds = new Set(main.cases.map((c) => c.id));
+    for (const c of held.cases) expect(mainIds.has(c.id), c.id).toBe(false);
+  });
 });
 
 describe("repeated runs", () => {

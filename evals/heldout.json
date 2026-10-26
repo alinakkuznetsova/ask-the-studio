@@ -1,0 +1,117 @@
+{
+  "version": "2026-10-26.1",
+  "asOf": "2026-10-26",
+  "notes": "Held out: written by the brand owner after the system was frozen, in customers' own words, and never used for tuning. Run once with npm run eval:heldout and reported separately from the main set. Same fields as dataset.json.",
+  "cases": [
+    {
+      "id": "h1-sensitive-skin-earrings",
+      "category": "realistic",
+      "question": "I have really sensitive skin so often earrinsg irritate me. Are your earrinsg irritation free?",
+      "expect": "answer",
+      "requiredDocs": [["materials", "solar-collection", "solar-earrings", "faq"]],
+      "acceptableDocs": ["marine-pearl-drop-earrings", "lunar-crescent-earrings", "lunar-collection", "marine-collection", "contact"],
+      "mustInclude": ["hypoallergenic"],
+      "mustNotInclude": ["irritation free", "guarantee"],
+      "reference": "Our pieces are 316L stainless steel, which is hypoallergenic and meets EU nickel limits, so most people with sensitive skin wear them without irritation. With a severe, diagnosed nickel allergy, email hello@parurelondon.com before ordering."
+    },
+    {
+      "id": "h2-gift-discount-haggle",
+      "category": "realistic",
+      "question": "Im trynna buy a nice gift for my girfriends birthday, any chnace i can get a discount?",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["gifting", "solar-collection", "marine-collection", "lunar-collection", "returns-policy-2026", "about", "faq", "shipping"],
+      "mustInclude": [],
+      "mustNotInclude": ["use code", "your code is", "discount code:"],
+      "reference": "We don't list discount codes. Sets are sold at a discount (for example the SOLAR set is £225 instead of £250), and gift wrapping is available for £4. Points to hello@parurelondon.com."
+    },
+    {
+      "id": "h3-is-it-nice-vague",
+      "category": "realistic",
+      "question": "Is the jewellery nice?",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["about", "solar-collection", "marine-collection", "lunar-collection", "materials", "faq"],
+      "mustInclude": [],
+      "mustNotInclude": ["the best", "best quality"],
+      "reference": "Doesn't make an unsupported claim. Either briefly describes what the pieces are (316L stainless steel, PVD gold plating, three collections of five matching pieces) or asks what they'd like to know."
+    },
+    {
+      "id": "h4-delivered-not-received",
+      "category": "unanswerable",
+      "question": "My package says delivered but I haven't received it",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["shipping", "contact", "returns-policy-2026", "faq"],
+      "mustInclude": [],
+      "mustNotInclude": ["refund you", "we will resend", "send a replacement"],
+      "reference": "We don't list what to do when a tracked parcel shows delivered but hasn't arrived. Email hello@parurelondon.com with your order number. Must not promise a refund or replacement."
+    },
+    {
+      "id": "h5-pearls-unique-ugly",
+      "category": "realistic",
+      "question": "I saw each pearl in the Marine collection is unique, are they all fairly similar though? what if i get an ugly one?",
+      "expect": "answer",
+      "requiredDocs": [["marine-collection", "pearl-care"]],
+      "acceptableDocs": ["returns-policy-2026", "faq", "materials", "marine-pearl-choker", "marine-pearl-bracelet", "marine-pearl-drop-earrings"],
+      "mustInclude": ["natural", "30 days"],
+      "mustNotInclude": [],
+      "reference": "Every pearl is natural, so each is slightly different in shape and lustre. If you don't like your piece, you can return it unworn in its original packaging within 30 days (earrings excepted, unless faulty or in a complete set)."
+    },
+    {
+      "id": "h6-necklace-broke-two-months",
+      "category": "realistic",
+      "question": "My necklace broke after 2 months of wear",
+      "expect": "answer",
+      "requiredDocs": [["warranty-and-repairs"]],
+      "acceptableDocs": ["returns-policy-2026", "faq", "contact"],
+      "mustInclude": ["12-month|12 months", "photo"],
+      "mustNotInclude": [],
+      "reference": "It's covered by the 12-month warranty against manufacturing faults such as a broken clasp, unless it was damaged by an accident or misuse. Email hello@parurelondon.com with the order number and a photo; if approved, we repair or replace it free, including postage."
+    },
+    {
+      "id": "h7-arrive-by-friday",
+      "category": "realistic",
+      "question": "If i buy now will it arrive by Friday?",
+      "expect": "answer",
+      "requiredDocs": [["shipping"]],
+      "acceptableDocs": ["faq", "lunar-collection"],
+      "mustInclude": ["1pm"],
+      "mustNotInclude": ["guarantee"],
+      "reference": "Orders placed before 1pm on a working day are dispatched the same day. UK standard delivery takes 2 to 3 working days and express (£6.95) arrives the next working day after dispatch, so a UK order placed now should arrive before Friday."
+    },
+    {
+      "id": "h8-most-popular-collection",
+      "category": "unanswerable",
+      "question": "Which is the most popular collection",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["about", "solar-collection", "marine-collection", "lunar-collection", "faq"],
+      "mustInclude": [],
+      "mustNotInclude": ["most popular is", "best seller", "bestseller"],
+      "reference": "We don't list which collection is most popular. May briefly describe the three collections. Must not name one as most popular."
+    },
+    {
+      "id": "h9-are-gems-real",
+      "category": "multi_doc",
+      "question": "Are the gems real?",
+      "expect": "answer",
+      "requiredDocs": [["materials", "solar-collection", "marine-collection", "lunar-collection"]],
+      "acceptableDocs": ["about", "faq", "solar-necklace", "solar-earrings", "lunar-star-ring", "marine-pearl-choker"],
+      "mustInclude": ["agate", "pearl", "cubic zirconia"],
+      "mustNotInclude": ["diamond"],
+      "reference": "SOLAR uses red agate, a natural stone, and MARINE uses natural freshwater pearls. LUNAR's crystals are star-cut cubic zirconia, not precious stones."
+    },
+    {
+      "id": "h10-ring-doesnt-fit",
+      "category": "realistic",
+      "question": "Tje ring I bought doesnt fit is this enough",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026", "size-guide"]],
+      "acceptableDocs": ["faq", "solar-ring", "marine-tide-ring", "lunar-star-ring", "solar-collection", "lunar-collection", "contact"],
+      "mustInclude": ["30 days", "unworn"],
+      "mustNotInclude": [],
+      "reference": "Yes, you can return it unworn in its original packaging within 30 days of delivery; email hello@parurelondon.com with your order number. SOLAR and MARINE rings are one size (UK O); LUNAR rings come in UK J, L, N and P."
+    }
+  ]
+}

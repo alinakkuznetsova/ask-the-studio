@@ -16,6 +16,7 @@
     "ingest": "tsx scripts/ingest.ts",
     "eval": "tsx evals/run.ts",
     "eval:baseline": "tsx evals/run.ts --variant baseline",
+    "eval:heldout": "tsx evals/run.ts --heldout",
     "eval:counterfactual": "tsx evals/counterfactual.ts",
     "eval:agreement": "tsx evals/agreement.ts",
     "feedback:export": "tsx scripts/feedback-to-evals.ts",

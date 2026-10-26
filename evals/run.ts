@@ -6,6 +6,7 @@
 //   npm run eval -- --only c1-return-window,o2-prompt-injection
 //   npm run eval -- --no-follow-ups   skip asking each suggested follow-up (faster)
 //   npm run eval -- --repeat 3        run every case 3 times; report mean, min and max, and flaky cases
+//   npm run eval:heldout              the held-out set: questions never used while tuning, run once at the end
 import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -32,7 +33,11 @@ const concurrency = Number(opt("concurrency") ?? 4);
 const repeats = Math.max(1, Math.floor(Number(opt("repeat") ?? 1)) || 1);
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-const dataset = DatasetSchema.parse(JSON.parse(await fs.readFile(path.join(here, "dataset.json"), "utf8")));
+// the held-out set is reported on its own and never feeds the dashboard, so
+// it stays an independent check rather than one more thing to tune against
+const heldout = flag("heldout");
+const dataset = DatasetSchema.parse(JSON.parse(await fs.readFile(path.join(here, heldout ? "heldout.json" : "dataset.json"), "utf8")));
+const reportName = heldout ? `heldout-${variant}` : variant;
 const cases = dataset.cases.filter((c) => !only || only.includes(c.id));
 
 const cfg = env();
@@ -167,7 +172,7 @@ console.table(
 
 const runsDir = path.join(settings.reportsDir, "runs");
 await fs.mkdir(runsDir, { recursive: true });
-const latestPath = path.join(settings.reportsDir, `latest-${variant}.json`);
+const latestPath = path.join(settings.reportsDir, `latest-${reportName}.json`);
 const previous = await fs.readFile(latestPath, "utf8").then((s) => JSON.parse(s) as { summary: Summary; runAt: string }, () => null);
 
 const deltaStr = (k: keyof Summary, kind: "pct" | "num" | "ms" | "usd") => {
@@ -214,11 +219,12 @@ const report = {
 // partial runs (--only) are printed but never overwrite the saved reports
 if (!only) {
   const stamp = report.runAt.replace(/[:.]/g, "-");
-  await fs.writeFile(path.join(runsDir, `${stamp}-${variant}.json`), JSON.stringify(report, null, 2));
+  await fs.writeFile(path.join(runsDir, `${stamp}-${reportName}.json`), JSON.stringify(report, null, 2));
   await fs.writeFile(latestPath, JSON.stringify(report, null, 2));
+  if (heldout) await fs.writeFile(path.join(settings.reportsDir, "heldout.md"), markdown(report, null).replace("# Eval report", "# Held-out eval report"));
 
   // latest.json feeds the dashboard: the full run, plus the baseline summary for comparison
-  const full = variant === "full" ? report : await fs.readFile(path.join(settings.reportsDir, "latest-full.json"), "utf8").then(JSON.parse, () => null);
+  const full = heldout ? null : variant === "full" ? report : await fs.readFile(path.join(settings.reportsDir, "latest-full.json"), "utf8").then(JSON.parse, () => null);
   const base = variant === "baseline" ? report : await fs.readFile(path.join(settings.reportsDir, "latest-baseline.json"), "utf8").then(JSON.parse, () => null);
   if (full) {
     await fs.writeFile(
@@ -227,7 +233,7 @@ if (!only) {
     );
     await fs.writeFile(path.join(settings.reportsDir, "latest.md"), markdown(full, base));
   }
-  console.log(`\nreport saved to evals/reports/latest-${variant}.json`);
+  console.log(`\nreport saved to evals/reports/latest-${reportName}.json`);
 }
 
 function markdown(full: typeof report, base: typeof report | null): string {
