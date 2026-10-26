@@ -33,7 +33,7 @@ Other commands:
 
 | Command | What it does |
 |---|---|
-| `npm test` | 44 unit and integration tests, offline (fake model and embedder) |
+| `npm test` | 50 unit and integration tests, offline (fake model and embedder) |
 | `npm run ingest -- --dry` | Validate the knowledge base and print every chunk |
 | `npm run ingest` | Embed the knowledge base, reporting cache hits vs new embeddings |
 | `npm run eval:baseline` | Run the eval set against the baseline configuration |
@@ -149,7 +149,8 @@ For disagreements between current sources (FAQ vs care guide), the prompt ranks 
 - `sources` comes before `text` in each sentence, so while streaming, a sentence's numbers are known the moment its text finishes.
 - **Every quote is checked in code** against the text of the source it cites (normalising case, curly quotes and markdown). Citations to sources that were not retrieved, or quotes that don't appear verbatim, are dropped. If no verified quote from a current source survives, the answer becomes a decline. This turns "grounded" from an instruction into a guarantee about what reaches the user.
 - **Declines are written by the app, not the model**, so they are consistent and always point to hello@parurelondon.com. There are four kinds: not in the sources, off-topic, low relevance (no model call made), and unverified.
-- Partly answerable questions are answered for the part the sources cover, with the gap stated.
+- **Partly answerable questions** are answered for the part the sources cover, with the gap stated plainly ("we don't list the exact length"). The model only flags `partial`; the app appends a fixed line pointing to hello@parurelondon.com, so the route to a person cannot be forgotten.
+- **Today's date is sent with every question**, so time-limited content (free LUNAR express delivery until 30 November 2026) is applied correctly. Evals run as of a fixed date from the dataset, so expectations stay stable after the offer ends.
 
 ### Follow-ups
 
@@ -186,17 +187,56 @@ Each case lists the documents retrieval must find, the documents it may cite, fa
 | Citation precision | Share of cited documents that are relevant |
 | Latency and cost | p50 and p95 end to end; USD per answer from token counts |
 
-Every report records the prompt version, models and dataset version, and shows the change since the previous run. The dashboard at `/#/evals` shows the latest run against the baseline, by question type and case by case.
+Every report records the prompt version, judge rubric version, models, dataset version and as-of date, and shows the change since the previous run. Judge scores are only compared between runs with the same rubric version. The dashboard at `/#/evals` shows the latest run against the baseline, by question type and case by case.
 
 ### Results
 
-_Fill in after running `npm run eval:baseline` then `npm run eval` (the table is generated in `evals/reports/latest.md`)._
+Latest run: 30 cases, `gpt-4.1-mini` for answers and judging, prompt `2026-10-26.6`, judge rubric `2026-10-26.2`, as of 26 October 2026. The baseline is vector-only retrieval with old policy versions in the index and no contextual headers; the full system adds BM25 fusion, version filtering and contextual headers. Both use the same prompt, model and judge, so the difference is retrieval design alone.
 
-The baseline is vector-only retrieval with old policy versions in the index and no contextual headers. The full system adds BM25 fusion, version filtering and contextual headers.
+| Metric | Baseline | Full system |
+|---|---|---|
+| Cases passed | 87% (26/30) | **93% (28/30)** |
+| Retrieval recall@6 | 98% | **100%** |
+| Decline accuracy | 87% | **93%** |
+| Key facts (must and must-not) | 97% | **100%** |
+| Correctness (judge, 1 to 5) | 4.73 | **4.88** |
+| Groundedness (judge) | 100% | 100% |
+| Focus (judge) | 96% | **100%** |
+| Quotes verified verbatim | 93% | **99%** |
+| Sentences backed by a verified source | 100% | 100% |
+| Citation precision | 96% | **97%** |
+| Answered when it should have declined | 0 | 0 |
+| Declined when it could have answered | 1 | **0** |
+| Latency p50 / p95 | 2.0s / 3.2s | 1.9s / 3.3s |
+| Cost per answer | $0.0011 | $0.0011 |
+
+| Question type | Cases | Baseline | Full system |
+|---|---|---|---|
+| Straightforward | 7 | 100% | 100% |
+| Needs several documents | 7 | 100% | 100% |
+| Conflicting or outdated | 7 | 86% | **100%** |
+| Not in the sources | 5 | 40% | **60%** |
+| Off-topic and manipulation | 4 | 100% | 100% |
+
+The full report, case by case, is in `evals/reports/latest.md` and on the dashboard at `/#/evals`.
 
 ### Findings
 
-_Fill in from the report: which group improved most, the remaining failures and why._
+**The evals changed the system more than the initial design did.** The full system went from 17% to 93% in three iterations, each driven by a specific failure:
+
+| Run | Pass rate | What the eval showed | What changed |
+|---|---|---|---|
+| 1 | 17% | The model omitted inline citation markers in 25 of 26 answers, despite a rule saying "an answer with no ids is invalid" | Answers became a list of sentences, each declaring its sources; the code adds the numbers. An instruction failed where a structure succeeded. |
+| 2 | 90% | The LUNAR offer was left out because the model did not know today's date. Partly answerable questions ignored the rule to give the support email. One answer repeated a false claim ("measurements are listed on each product page") that came from the knowledge base itself. The judge gave 5/5 to an answer padded with unrelated offers. | Today's date in every request; a `partial` flag with the contact line added by code; the size guide corrected; the judge rubric gained a focus score and a version number. |
+| 3 | 93% | Two "is there X?" questions (engraving, student discount) answered honestly but without the contact line | Recorded as known issues rather than tuned away (see below). |
+
+**Version filtering prevents the costly error, not the common one.** The baseline answered most conflict questions correctly on its own: the model can often tell which policy is newer from the dates. But in every run it made at least one stale answer the full system never made: telling a customer free delivery starts at £75 (the 2025 threshold), and twice declining to confirm US shipping because the 2025 policy said "UK and Europe only". For a support assistant, a confident wrong policy is worse than a decline, so this is enforced in code rather than left to the model.
+
+**Grounding holds.** Across all runs, the system never answered a question it should have declined, every answer sentence in the final run was backed by a verified source, and 99% of quotes matched their source verbatim (the rest were dropped before reaching the user).
+
+**Known issues.** Questions about something the knowledge base does not mention ("can you engrave my bangle?", "is there a student discount?") are answered honestly ("there is no mention of engraving") but sometimes in system-like wording, without flagging the answer as partial, so the contact line is missing. A general rule (treat "do you offer X?" with no matching source as partial) would likely fix both. I stopped here deliberately: two documented failures in a 30-case set are more useful than a prompt tuned until this particular set passes.
+
+**Cost and speed.** About $0.001 per answer (under 0.1p) and a median of 1.9 seconds end to end. Searching 38 chunks in memory is near instant; most of the time is the embedding call for the question and the model writing the answer, and the streamed UI shows the first words well before the answer completes.
 
 ### CI
 
@@ -244,11 +284,12 @@ Not done here, and needed for a real launch: authentication for any staff or ord
 
 ## Next steps
 
-1. A re-ranker (a cross-encoder or a cheap LLM pass) over the top 20 before taking 6, for the multi-document cases.
-2. Order-aware answers ("where is my order?") behind authentication, through a read-only order lookup tool.
-3. Effective-date reasoning for customers who bought under an older policy (an order delivered in 2025 is covered by the 2025 returns policy).
-4. Tracing in Langfuse, and evals run against a sample of real traffic.
-5. Multilingual questions: embed and answer in the customer's language, cite the English source.
+1. Fix the known issue above: treat questions about things with no matching source as partly answered, and add more "do you offer X?" cases to the eval set first.
+2. A re-ranker (a cross-encoder or a cheap LLM pass) over the top 20 before taking 6, for the multi-document cases.
+3. Order-aware answers ("where is my order?") behind authentication, through a read-only order lookup tool.
+4. Effective-date reasoning for customers who bought under an older policy (an order delivered in 2025 is covered by the 2025 returns policy).
+5. Tracing in Langfuse, and evals run against a sample of real traffic.
+6. Multilingual questions: embed and answer in the customer's language, cite the English source.
 
 ## Project layout
 
