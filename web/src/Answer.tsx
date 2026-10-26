@@ -230,8 +230,8 @@ function useSmoothText(target: string): { text: string; typing: boolean } {
   return { text: shown.replace(/\[\d*$/, ""), typing: shown !== target };
 }
 
-// three domed stones catching the light in turn, after the rounded settings
-// of the SOLAR pieces. purely decorative, so hidden from screen readers
+// three brand-red dots growing in turn. purely decorative, so hidden from
+// screen readers; the text beside them says what is happening
 function Thinking() {
   return (
     <div className="thinking" role="status">
