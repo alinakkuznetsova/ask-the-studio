@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { sendFeedback, type AskResult, type Citation } from "./api";
 
 interface Props {
@@ -150,10 +150,80 @@ function Details({ r }: { r: AskResult }) {
   );
 }
 
+const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function commonPrefix(a: string, b: string): string {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return a.slice(0, i);
+}
+
+// the model sends text in bursts (often a whole answer in about a second),
+// which looks jumpy. this reveals text at a steady pace instead: about 120
+// characters a second, speeding up gently when a large backlog builds so it never
+// falls far behind. if the final text differs from what was streamed (e.g.
+// an unverified citation removed), it rewinds to the common prefix and
+// continues from there.
+function useSmoothText(target: string): { text: string; typing: boolean } {
+  const [shown, setShown] = useState("");
+  const shownRef = useRef("");
+  const targetRef = useRef(target);
+  const frame = useRef<number | null>(null);
+  targetRef.current = target;
+
+  useEffect(() => {
+    if (reducedMotion()) {
+      shownRef.current = target;
+      setShown(target);
+      return;
+    }
+    if (frame.current !== null) return; // already animating towards the latest target
+    let last = performance.now();
+    let carry = 0;
+    const step = (now: number) => {
+      const t = targetRef.current;
+      let s = shownRef.current;
+      if (!t.startsWith(s)) s = commonPrefix(s, t);
+      const backlog = t.length - s.length;
+      if (backlog <= 0) {
+        shownRef.current = s;
+        setShown(s);
+        frame.current = null;
+        return;
+      }
+      const charsPerMs = Math.max(0.12, backlog / 2500);
+      carry += (now - last) * charsPerMs;
+      last = now;
+      const n = Math.floor(carry);
+      if (n > 0) {
+        carry -= n;
+        s = t.slice(0, s.length + n);
+        shownRef.current = s;
+        setShown(s);
+      }
+      frame.current = requestAnimationFrame(step);
+    };
+    frame.current = requestAnimationFrame(step);
+  }, [target]);
+
+  useEffect(
+    () => () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    },
+    [],
+  );
+
+  // never show half a citation marker such as "[1"
+  return { text: shown.replace(/\[\d*$/, ""), typing: shown !== target };
+}
+
 export function Answer({ text, status, result, supportEmail }: Props) {
   const [open, setOpen] = useState<number | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | "error" | null>(null);
+  const smooth = useSmoothText(status === "error" ? "" : text);
+  // sources and the footer appear once the text has finished typing out
+  const settled = status === "done" && !smooth.typing;
 
   const toggle = (n: number) => setOpen((cur) => (cur === n ? null : n));
   const declined = result && !result.answerable;
@@ -178,21 +248,21 @@ export function Answer({ text, status, result, supportEmail }: Props) {
 
   return (
     <article className={`a${declined ? " is-declined" : ""}`}>
-      {status === "streaming" && !text ? (
+      {!smooth.text && !settled ? (
         <p className="thinking">Looking through our guides and policies</p>
       ) : (
-        <div className={`a-body${status === "streaming" ? " is-streaming" : ""}`}>
-          <Body text={text} onCite={toggle} active={open} />
+        <div className={`a-body${settled ? "" : " is-streaming"}`}>
+          <Body text={smooth.text} onCite={toggle} active={open} />
         </div>
       )}
 
-      {declined && result.declineReason !== "off_topic" && (
+      {settled && declined && result.declineReason !== "off_topic" && (
         <a className="mail" href={`mailto:${supportEmail}`}>
           Email the studio
         </a>
       )}
 
-      {result && result.sources.length > 0 && (
+      {settled && result && result.sources.length > 0 && (
         <ol className="tags" aria-label="Sources">
           {result.sources.map((c) => (
             <SourceTag key={c.chunkId} c={c} open={open === c.n} onToggle={() => toggle(c.n)} />
@@ -200,7 +270,7 @@ export function Answer({ text, status, result, supportEmail }: Props) {
         </ol>
       )}
 
-      {result && (
+      {settled && result && (
         <div className="a-foot">
           {feedback === null ? (
             <span className="rate">
@@ -220,7 +290,7 @@ export function Answer({ text, status, result, supportEmail }: Props) {
           </button>
         </div>
       )}
-      {result && showDetails && <Details r={result} />}
+      {settled && result && showDetails && <Details r={result} />}
     </article>
   );
 }
