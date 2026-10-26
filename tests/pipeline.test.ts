@@ -118,6 +118,8 @@ describe("ask pipeline", () => {
     await ask("Is express delivery free on LUNAR?", { retriever, chat }, { now: new Date("2026-10-26T12:00:00Z") });
     const userMsg = chat.calls[0]!.find((m) => m.role === "user")!.content;
     expect(userMsg).toContain("<today>26 October 2026</today>");
+    // each source carries its document type, so the faq can be ranked below guides
+    expect(userMsg).toMatch(/<current id="S1" type="(policy|product|collection|guide|faq|brand|contact)"/);
   });
 
   it("rewrites follow-ups before retrieval and escapes user text", async () => {
