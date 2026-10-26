@@ -1,0 +1,10 @@
+node_modules
+web/node_modules
+dist
+web/dist
+.env
+.env.*
+.cache
+data
+.git
+evals/reports/runs
