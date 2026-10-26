@@ -22,4 +22,4 @@ Our bracelets and necklaces have adjustable clasps with multiple length options.
 Bangles and cuffs are one size and have a small opening, so they can be gently adjusted to fit most wrists. Don't bend them repeatedly, as this can weaken the metal.
 
 ## Product measurements
-Exact measurements are listed on each product page.
+Where we have exact measurements, they are listed on the product page. If a measurement you need is not listed, email hello@parurelondon.com and we will help.
