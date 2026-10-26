@@ -1,11 +1,15 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { sendFeedback, type AskResult, type Citation } from "./api";
 
+export type AnswerStatus = "streaming" | "done" | "error" | "stopped";
+
 interface Props {
   text: string;
-  status: "streaming" | "done" | "error";
+  status: AnswerStatus;
   result?: AskResult;
   supportEmail: string;
+  // asks a suggested follow-up; undefined while another answer is streaming
+  onAsk?: (question: string) => void;
 }
 
 // renders model text safely: react escapes everything, and we only recognise
@@ -226,13 +230,29 @@ function useSmoothText(target: string): { text: string; typing: boolean } {
   return { text: shown.replace(/\[\d*$/, ""), typing: shown !== target };
 }
 
-export function Answer({ text, status, result, supportEmail }: Props) {
+// three domed stones catching the light in turn, after the rounded settings
+// of the SOLAR pieces. purely decorative, so hidden from screen readers
+function Thinking() {
+  return (
+    <div className="thinking" role="status">
+      <span className="stones" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span>Looking through our guides and policies</span>
+    </div>
+  );
+}
+
+export function Answer({ text, status, result, supportEmail, onAsk }: Props) {
   const [open, setOpen] = useState<number | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | "error" | null>(null);
   const smooth = useSmoothText(status === "error" ? "" : text);
   // sources and the footer appear once the text has finished typing out
   const settled = status === "done" && !smooth.typing;
+  const stopped = status === "stopped";
 
   const toggle = (n: number) => setOpen((cur) => (cur === n ? null : n));
   const declined = result && !result.answerable;
@@ -257,13 +277,15 @@ export function Answer({ text, status, result, supportEmail }: Props) {
 
   return (
     <article className={`a${declined ? " is-declined" : ""}`}>
-      {!smooth.text && !settled ? (
-        <p className="thinking">Looking through our guides and policies</p>
+      {!smooth.text && !settled && !stopped ? (
+        <Thinking />
       ) : (
-        <div className={`a-body${settled ? "" : " is-streaming"}`}>
+        <div className={`a-body${settled || stopped ? "" : " is-streaming"}`}>
           <Body text={smooth.text} onCite={toggle} active={open} />
         </div>
       )}
+
+      {stopped && <p className="stopped">Stopped.</p>}
 
       {settled && declined && result.declineReason !== "off_topic" && (
         <a className="mail" href={`mailto:${supportEmail}`}>
@@ -277,6 +299,21 @@ export function Answer({ text, status, result, supportEmail }: Props) {
             <SourceTag key={c.chunkId} c={c} open={open === c.n} onToggle={() => toggle(c.n)} />
           ))}
         </ol>
+      )}
+
+      {settled && result && result.followUps.length > 0 && (
+        <div className="follow-ups">
+          <h3>Related questions</h3>
+          <ul className="chips">
+            {result.followUps.map((f) => (
+              <li key={f}>
+                <button type="button" className="chip" onClick={() => onAsk?.(f)} disabled={!onAsk}>
+                  {f}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {settled && result && (

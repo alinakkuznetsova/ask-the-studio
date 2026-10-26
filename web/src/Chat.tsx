@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { askStream, type AskResult, type Turn } from "./api";
-import { Answer } from "./Answer";
+import { Answer, type AnswerStatus } from "./Answer";
 
 const MAX_CHARS = 500;
 const SUPPORT_EMAIL = "hello@parurelondon.com";
@@ -9,7 +9,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   text: string;
-  status: "streaming" | "done" | "error";
+  status: AnswerStatus;
   result?: AskResult;
 }
 
@@ -37,6 +37,22 @@ function toHistory(messages: Message[]): Turn[] {
     .filter((m) => m.status === "done")
     .map((m) => ({ role: m.role, content: m.text.replace(/\[\d+\]/g, "").slice(0, 1500) }))
     .slice(-6);
+}
+
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M12 19V5M5.5 11.5 12 5l6.5 6.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+      <rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor" />
+    </svg>
+  );
 }
 
 export function Chat() {
@@ -73,12 +89,20 @@ export function Chat() {
       // removed server side, and declines use the app's own wording
       update(botMsg.id, { text: result.answer, result, status: "done" });
     } catch (err) {
-      if (controller.signal.aborted) return;
+      if (controller.signal.aborted) {
+        update(botMsg.id, { status: "stopped" });
+        return;
+      }
       update(botMsg.id, { text: err instanceof Error ? err.message : "Something went wrong. Please try again.", status: "error" });
     } finally {
       setBusy(false);
       inputRef.current?.focus();
     }
+  }
+
+  // stops the answer being written; the server stops the model call too
+  function stop() {
+    abortRef.current?.abort();
   }
 
   function onSubmit(e: FormEvent) {
@@ -101,6 +125,7 @@ export function Chat() {
   }
 
   const over = draft.length > MAX_CHARS;
+  const nearLimit = draft.length > MAX_CHARS - 100;
 
   return (
     <main className="chat">
@@ -113,20 +138,20 @@ export function Chat() {
           </p>
           <div className="suggestions">
             <h2>Popular questions</h2>
-            <ul>
+            <ul className="chips">
               {SUGGESTIONS.map((s) => (
                 <li key={s}>
-                  <button type="button" onClick={() => void send(s)}>
+                  <button type="button" className="chip" onClick={() => void send(s)}>
                     {s}
                   </button>
                 </li>
               ))}
             </ul>
             <h2>Try to trip it up</h2>
-            <ul>
+            <ul className="chips">
               {EDGE_CASES.map((s) => (
                 <li key={s}>
-                  <button type="button" onClick={() => void send(s)}>
+                  <button type="button" className="chip" onClick={() => void send(s)}>
                     {s}
                   </button>
                 </li>
@@ -138,11 +163,18 @@ export function Chat() {
         <section className="thread" aria-live="polite" aria-busy={busy}>
           {messages.map((m) =>
             m.role === "user" ? (
-              <p key={m.id} className="q">
-                {m.text}
-              </p>
+              <div key={m.id} className="q-row">
+                <p className="q">{m.text}</p>
+              </div>
             ) : (
-              <Answer key={m.id} text={m.text} status={m.status} result={m.result} supportEmail={SUPPORT_EMAIL} />
+              <Answer
+                key={m.id}
+                text={m.text}
+                status={m.status}
+                result={m.result}
+                supportEmail={SUPPORT_EMAIL}
+                onAsk={busy ? undefined : (f) => void send(f)}
+              />
             ),
           )}
           <div ref={endRef} />
@@ -150,7 +182,7 @@ export function Chat() {
       )}
 
       <form className="composer" onSubmit={onSubmit}>
-        <div className="composer-inner">
+        <div className={`composer-box${over ? " is-over" : ""}`}>
           <label htmlFor="question" className="sr-only">
             Your question
           </label>
@@ -166,21 +198,30 @@ export function Chat() {
             aria-describedby="composer-help"
             autoFocus
           />
-          <button type="submit" className="send" disabled={busy || !draft.trim() || over}>
-            {busy ? "Answering" : "Ask"}
-          </button>
-        </div>
-        <div className="composer-foot" id="composer-help">
-          {over ? (
-            <span className="warn">Please keep questions under {MAX_CHARS} characters.</span>
+          {busy ? (
+            <button type="button" className="icon-btn" onClick={stop} aria-label="Stop answering">
+              <StopIcon />
+            </button>
           ) : (
-            <span>Answers come only from Parure's published information. Please don't share card details.</span>
-          )}
-          {messages.length > 0 && (
-            <button type="button" className="link" onClick={reset}>
-              New conversation
+            <button type="submit" className="icon-btn" disabled={!draft.trim() || over} aria-label="Ask">
+              <SendIcon />
             </button>
           )}
+        </div>
+        <div className="composer-foot" id="composer-help">
+          <span className={over ? "warn" : undefined}>
+            {over
+              ? `Please keep questions under ${MAX_CHARS} characters.`
+              : "Answers use only Parure's published information. Don't share card details."}
+          </span>
+          <span className="composer-actions">
+            {nearLimit && <span className={over ? "warn" : undefined}>{`${draft.length}/${MAX_CHARS}`}</span>}
+            {messages.length > 0 && (
+              <button type="button" className="link" onClick={reset}>
+                New conversation
+              </button>
+            )}
+          </span>
         </div>
       </form>
     </main>

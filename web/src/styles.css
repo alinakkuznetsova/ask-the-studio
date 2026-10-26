@@ -166,58 +166,71 @@ code {
   max-width: 34rem;
   font-size: 1.0625rem;
 }
-.suggestions h2 {
-  margin: 2rem 0 0.5rem;
-  font-size: 0.9375rem;
+.suggestions h2,
+.follow-ups h3 {
+  margin: 2rem 0 0.75rem;
+  font-size: 0.875rem;
   font-weight: 400;
   font-style: italic;
   color: var(--red-50);
 }
-.suggestions ul {
+
+/* suggestion chips, used for starter and follow-up questions */
+.chips {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-top: 1px solid var(--product);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
-.suggestions li {
-  border-bottom: 1px solid var(--product);
-}
-.suggestions button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: 0;
-  padding: 0.8rem 0;
+.chip {
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--product);
+  /* 18px rather than a full pill, so chips that wrap onto two lines stay neat */
+  border-radius: 18px;
+  background: var(--white);
   color: var(--red);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: left;
   cursor: pointer;
-  line-height: 1.5;
+  transition: border-color 0.15s, color 0.15s;
 }
-.suggestions button:hover {
+.chip:hover:not(:disabled) {
+  border-color: var(--dark-red-50);
   color: var(--dark-red);
-  text-decoration: underline;
-  text-decoration-color: var(--dark-red-50);
-  text-underline-offset: 4px;
+}
+.chip:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
-/* the customer's question */
-.q {
-  margin: 2.5rem 0 1rem;
-  font-style: italic;
-  font-size: 1.1875rem;
-  line-height: 1.5;
-  color: var(--dark-red);
-  overflow-wrap: anywhere;
+/* the customer's question, as a bubble on the right */
+.q-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2.25rem 0 1.25rem;
 }
-.q:first-child {
+.q-row:first-child {
   margin-top: 0;
+}
+.q {
+  margin: 0;
+  max-width: 85%;
+  padding: 0.65rem 1.1rem;
+  border-radius: 20px 20px 6px 20px;
+  background: var(--product);
+  color: var(--red);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 /* the studio's answer */
 .a {
-  margin: 0 0 1.5rem;
-  padding-bottom: 1.75rem;
-  border-bottom: 1px solid var(--product);
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
 }
 .a-body p,
 .a-body ul {
@@ -247,20 +260,54 @@ code {
     opacity: 0;
   }
 }
+/* waiting: three domed stones catch the light in turn */
 .thinking {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin: 0;
   font-style: italic;
   color: var(--red-50);
 }
-.thinking::after {
-  content: "";
-  animation: dots 1.4s steps(4) infinite;
+.stones {
+  display: inline-flex;
+  gap: 5px;
 }
-@keyframes dots {
-  0% { content: ""; }
-  25% { content: "."; }
-  50% { content: ".."; }
-  75% { content: "..."; }
+.stones i {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--pale-orange) 0 18%, var(--dark-red) 65%);
+  box-shadow: inset 0 -1px 2px rgba(25, 5, 12, 0.35);
+  opacity: 0.35;
+  transform: scale(0.85);
+  animation: glint 1.2s ease-in-out infinite;
+}
+.stones i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.stones i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes glint {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.stopped {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--red-50);
+}
+.follow-ups h3 {
+  margin-top: 1.5rem;
 }
 
 .is-declined .a-body {
@@ -457,70 +504,91 @@ code {
   color: var(--red-50);
 }
 
-/* composer */
+/* composer: one rounded bar with the send button inside, lifted off the page */
 .composer {
   position: sticky;
   bottom: 0;
-  padding: 0.75rem var(--gutter) max(0.75rem, env(safe-area-inset-bottom));
-  background: var(--cream);
-  border-top: 1px solid var(--product);
+  padding: 1.5rem var(--gutter) max(0.75rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(247, 243, 237, 0), var(--cream) 1.5rem);
 }
-.composer-inner,
+.composer-box,
 .composer-foot {
   max-width: var(--measure);
   margin: 0 auto;
 }
-.composer-inner {
+.composer-box {
   display: flex;
+  align-items: flex-end;
   gap: 0.5rem;
-  align-items: stretch;
+  padding: 6px 6px 6px 1.15rem;
+  background: var(--white);
+  border: 1px solid var(--product);
+  border-radius: 26px;
+  box-shadow:
+    0 1px 2px rgba(61, 30, 22, 0.06),
+    0 10px 28px -12px rgba(61, 30, 22, 0.22);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.composer-box:focus-within {
+  border-color: var(--dark-red-50);
+  box-shadow:
+    0 1px 2px rgba(61, 30, 22, 0.06),
+    0 12px 32px -12px rgba(61, 30, 22, 0.3);
+}
+.composer-box.is-over {
+  border-color: var(--dark-red);
 }
 .composer textarea {
   flex: 1;
   min-width: 0;
   resize: none;
   field-sizing: content;
-  min-height: 3rem;
+  min-height: 2.5rem;
   max-height: 10rem;
-  padding: 0.75rem 0.9rem;
-  background: var(--white);
-  border: 1px solid var(--dark-red-50);
-  border-radius: 2px;
+  padding: 0.55rem 0;
+  border: 0;
+  outline: none;
+  background: transparent;
   line-height: 1.5;
-}
-.composer textarea:focus-visible {
-  outline: 1px solid var(--dark-red);
-  outline-offset: 0;
-  border-color: var(--dark-red);
 }
 .composer textarea::placeholder {
   color: var(--red-50);
   font-style: italic;
 }
-.composer textarea[aria-invalid="true"] {
-  border-color: var(--dark-red);
-}
-.send {
+.icon-btn {
   flex: none;
-  padding: 0 1.4rem;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 0;
-  border-radius: 2px;
+  border-radius: 50%;
   background: var(--dark-red);
   color: var(--pale-orange);
-  font-style: italic;
   cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
 }
-.send:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.icon-btn:hover:not(:disabled) {
+  background: var(--red);
+}
+.icon-btn:disabled {
+  background: var(--product);
+  color: var(--white);
+  cursor: default;
 }
 .composer-foot {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 0.4rem;
-  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0 1.15rem;
+  font-size: 0.72rem;
   color: var(--red-50);
+}
+.composer-actions {
+  display: inline-flex;
+  gap: 1rem;
+  white-space: nowrap;
 }
 .composer-foot .warn {
   color: var(--dark-red);
@@ -732,11 +800,14 @@ code {
   .case-body {
     padding-left: 0;
   }
-  .composer-foot span {
+  .composer-foot > span:first-child:not(.warn) {
     display: none;
   }
   .composer-foot {
     justify-content: flex-end;
+  }
+  .q {
+    max-width: 92%;
   }
 }
 
