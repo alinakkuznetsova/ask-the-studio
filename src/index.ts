@@ -1,6 +1,8 @@
 import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
 import { serve } from "@hono/node-server";
-import { env } from "./config.js";
+import { env, ROOT } from "./config.js";
 import { buildIndex, openaiClient } from "./kb/build.js";
 import { OpenAIChat } from "./answer/llm.js";
 import { createApp } from "./server/app.js";
@@ -34,7 +36,8 @@ const app = createApp({
   ratePerMinute: cfg.RATE_LIMIT_PER_MINUTE,
   dailyCap: cfg.DAILY_REQUEST_CAP,
   docs: docs.length,
-  serveWeb: true,
+  // in development vite serves the ui, so only serve the built copy if it exists
+  serveWeb: fs.existsSync(path.join(ROOT, "web", "dist", "index.html")),
 });
 
 const server = serve({ fetch: app.fetch, port: cfg.PORT, hostname: "0.0.0.0" }, (info) => {
