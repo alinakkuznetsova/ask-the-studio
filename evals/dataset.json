@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.4",
+  "version": "2026-10-26.5",
   "asOf": "2026-10-26",
   "notes": "asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
@@ -87,7 +87,7 @@
       "expect": "answer",
       "requiredDocs": [["solar-necklace"]],
       "acceptableDocs": ["solar-collection", "size-guide"],
-      "mustInclude": ["40", "45"],
+      "mustInclude": ["40cm|40 cm|40 centimetres", "45cm|45 cm|45 centimetres"],
       "mustNotInclude": [],
       "reference": "40cm, extending to 45cm with the adjustable clasp."
     },
