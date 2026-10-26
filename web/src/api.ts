@@ -124,6 +124,7 @@ export interface EvalSummary {
   sentenceCoverage: number | null;
   citationPrecision: number | null;
   followUpAnswerRate: number | null;
+  followUpFreshness?: number | null;
   latencyP50: number | null;
   latencyP95: number | null;
   costPerAnswerUsd: number | null;

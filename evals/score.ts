@@ -27,6 +27,7 @@ export interface Judgement {
   correctness: number; // 1 to 5
   grounded: boolean; // every claim supported by the cited sources
   focused: boolean; // sticks to the question, no padding or system wording
+  freshFollowUps?: boolean; // no suggested follow-up is already answered (missing in older reports)
   reason: string;
 }
 
@@ -182,6 +183,7 @@ export interface Summary {
   sentenceCoverage: number | null;
   citationPrecision: number | null;
   followUpAnswerRate: number | null; // share of suggested follow-ups that got an answer
+  followUpFreshness: number | null; // share of answers whose follow-ups ask something new
   latencyP50: number | null;
   latencyP95: number | null;
   costPerAnswerUsd: number | null;
@@ -216,6 +218,7 @@ export function summarise(results: CaseResult[]): Summary {
       const total = asked.reduce((n, r) => n + r.followUps.length, 0);
       return total ? asked.reduce((n, r) => n + r.followUpsAnswered!, 0) / total : null;
     })(),
+    followUpFreshness: pct(vals((r) => (r.followUps.length && r.judge?.freshFollowUps !== undefined ? r.judge.freshFollowUps : null))),
     latencyP50: percentile(results.map((r) => r.latencyMs), 50),
     latencyP95: percentile(results.map((r) => r.latencyMs), 95),
     costPerAnswerUsd: mean(costs),

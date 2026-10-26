@@ -60,9 +60,9 @@ async function runCase(c: (typeof cases)[number], repeat: number): Promise<CaseR
     let j = null;
     const cited = r.sources.map((s) => ({ title: `${s.title} > ${s.section}`, text: chunkById.get(s.chunkId)?.text ?? "" }));
     if (r.answerable) {
-      const res = await judge(judgeModel, { question: c.question, reference: c.reference, answer: r.answer, sources: cited });
+      const res = await judge(judgeModel, { question: c.question, reference: c.reference, answer: r.answer, followUps: r.followUps, sources: cited });
       judgeCost += costUsd(cfg.JUDGE_MODEL, res.usage.input, res.usage.output) ?? 0;
-      j = { correctness: res.correctness, grounded: res.grounded, focused: res.focused, reason: res.reason };
+      j = { correctness: res.correctness, grounded: res.grounded, focused: res.focused, freshFollowUps: res.freshFollowUps, reason: res.reason };
     }
     const scored = scoreCase(c, r, j);
     scored.cited = cited;
@@ -146,6 +146,7 @@ const METRICS: [keyof Summary, string, "pct" | "num" | "ms" | "usd"][] = [
   ["sentenceCoverage", "Sentences with a verified source", "pct"],
   ["citationPrecision", "Citation precision", "pct"],
   ["followUpAnswerRate", "Suggested follow-ups answered", "pct"],
+  ["followUpFreshness", "Follow-ups not already answered (judge)", "pct"],
   ["latencyP50", "Latency p50", "ms"],
   ["latencyP95", "Latency p95", "ms"],
   ["costPerAnswerUsd", "Cost per answer", "usd"],

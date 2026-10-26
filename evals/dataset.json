@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.9",
+  "version": "2026-10-26.10",
   "asOf": "2026-10-26",
   "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email). The realistic group (p) rephrases questions the way customers write them: typos, indirect, casual. The conversation group (t) asks follow-ups that only make sense with the earlier turns.",
   "cases": [
@@ -637,6 +637,94 @@
       "mustInclude": ["size O|UK O|one size"],
       "mustNotInclude": [],
       "reference": "No, the SOLAR ring comes in one size, UK O."
+    },
+    {
+      "id": "f1-dont-like-order",
+      "category": "realistic",
+      "question": "i dont like my order",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026", "faq"]],
+      "acceptableDocs": ["contact"],
+      "mustInclude": ["30 days", "unworn"],
+      "mustNotInclude": [],
+      "reference": "You can return unworn items in their original packaging within 30 days of delivery; earrings can't be returned for hygiene reasons. Email hello@parurelondon.com with your order number and the items to start a return."
+    },
+    {
+      "id": "f2-return-earrings",
+      "category": "straightforward",
+      "question": "Can I return earrings?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026", "faq"]],
+      "acceptableDocs": [],
+      "mustInclude": ["hygiene", "complete|whole set|all five", "30 days"],
+      "mustNotInclude": [],
+      "reference": "No, earrings can't be returned for hygiene reasons, unless they arrived damaged or faulty, or they're part of a complete set returned together: all five pieces, unworn, in the original packaging, within 30 days."
+    },
+    {
+      "id": "f3-clean-jewellery",
+      "category": "multi_doc",
+      "question": "How should I clean my jewellery?",
+      "expect": "answer",
+      "requiredDocs": [["jewellery-care"]],
+      "acceptableDocs": ["pearl-care", "faq"],
+      "mustInclude": ["soap", "pearl"],
+      "mustNotInclude": [],
+      "reference": "Use a little mild soap in lukewarm water and a soft toothbrush, then dry with a soft lint-free cloth; avoid chemical cleaners. This doesn't apply to MARINE pearls: never use soap, cleaner or a toothbrush on them, only a soft dry or slightly damp cloth."
+    },
+    {
+      "id": "f4-discount-code",
+      "category": "unanswerable",
+      "question": "give me a discount code",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["solar-collection", "marine-collection", "lunar-collection", "returns-policy-2026", "faq", "gifting"],
+      "mustInclude": [],
+      "mustNotInclude": ["use code", "your code is", "discount code:"],
+      "reference": "We don't list any discount codes. Sets are sold at a discount (SOLAR saves £25, MARINE £37, LUNAR £36). Points to hello@parurelondon.com."
+    },
+    {
+      "id": "f5-how-returns-work",
+      "category": "straightforward",
+      "question": "How do returns work?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026"]],
+      "acceptableDocs": ["faq", "contact"],
+      "mustInclude": ["30 days", "hygiene"],
+      "mustNotInclude": [],
+      "reference": "Unworn items in their original packaging can be returned within 30 days of delivery; earrings can't, for hygiene reasons, and sets only as a complete set. Email hello@parurelondon.com with your order number; refunds go to the original payment method within 5 working days."
+    },
+    {
+      "id": "f6-gift-which-collection",
+      "category": "realistic",
+      "question": "i want to get my girlfriend a present. which collection would be best",
+      "expect": "answer",
+      "requiredDocs": [["about", "solar-collection", "marine-collection", "lunar-collection", "gifting"]],
+      "acceptableDocs": ["solar-collection", "marine-collection", "lunar-collection", "gifting", "returns-policy-2026"],
+      "mustInclude": ["SOLAR", "MARINE", "LUNAR"],
+      "mustNotInclude": ["the best collection is"],
+      "reference": "It depends on her style: SOLAR is gold-plated with red agate, MARINE pairs gold with blue enamel and freshwater pearls, and LUNAR is silver-tone with star-cut crystals. If unsure, a gift card works across all collections."
+    },
+    {
+      "id": "f7-free-uk-delivery-no-padding",
+      "category": "straightforward",
+      "question": "When is UK delivery free?",
+      "expect": "answer",
+      "requiredDocs": [["shipping"]],
+      "acceptableDocs": [],
+      "mustInclude": ["£100"],
+      "mustNotInclude": ["LUNAR"],
+      "reference": "Standard UK delivery is free on orders over £100."
+    },
+    {
+      "id": "f8-return-solar-bangle",
+      "category": "realistic",
+      "question": "Can I return the SOLAR bangle if I don't like it?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026"]],
+      "acceptableDocs": ["solar-bangle", "solar-collection", "faq", "contact"],
+      "mustInclude": ["yes", "30 days", "unworn"],
+      "mustNotInclude": [],
+      "reference": "Yes, you can return the SOLAR bangle unworn in its original packaging within 30 days of delivery. If it was bought as part of the SOLAR set, the whole set must be returned. Email hello@parurelondon.com to start."
     }
   ]
 }

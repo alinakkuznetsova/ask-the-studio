@@ -15,6 +15,7 @@ const METRICS: { key: keyof EvalSummary; label: string; kind: Kind; help: string
   { key: "sentenceCoverage", label: "Sentences backed by a source", kind: "pct", help: "Answer sentences with at least one verified source." },
   { key: "citationPrecision", label: "Citations on target", kind: "pct", help: "Cited documents that are relevant to the question." },
   { key: "followUpAnswerRate", label: "Suggested follow-ups answered", kind: "pct", help: "Each suggested next question was asked for real." },
+  { key: "followUpFreshness", label: "Follow-ups that ask something new", kind: "pct", help: "The judge found no suggestion the answer had already covered." },
   { key: "falseAnswers", label: "Answered when it should decline", kind: "count", help: "The costly failure: made something up.", lowerIsBetter: true },
   { key: "falseDeclines", label: "Declined when it could answer", kind: "count", help: "Unhelpful, but safe.", lowerIsBetter: true },
   { key: "latencyP50", label: "Typical response time", kind: "ms", help: "Median, end to end.", lowerIsBetter: true },
