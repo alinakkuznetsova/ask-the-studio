@@ -358,6 +358,11 @@ code {
 .follow-ups h3 {
   margin-top: 1.5rem;
 }
+/* related questions read as a list, one per line */
+.follow-ups .chips {
+  flex-direction: column;
+  align-items: flex-start;
+}
 
 .is-error p {
   margin: 0;
