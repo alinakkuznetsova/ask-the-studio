@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.11",
+  "version": "2026-10-26.12",
   "asOf": "2026-10-26",
   "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email). The realistic group (p) rephrases questions the way customers write them: typos, indirect, casual. The conversation group (t) asks follow-ups that only make sense with the earlier turns.",
   "cases": [
@@ -736,6 +736,39 @@
       "mustInclude": ["photo", "14 days", "replacement|replace"],
       "mustNotInclude": [],
       "reference": "Email hello@parurelondon.com within 14 days of delivery with your order number and a photo of the fault. We'll offer a replacement or a full refund, including delivery costs, and send a prepaid return label. Faults that appear later are covered by the 12-month warranty."
+    },
+    {
+      "id": "f10-gift-receipt-return",
+      "category": "realistic",
+      "question": "How do I include a gift receipt with my return?",
+      "expect": "answer",
+      "requiredDocs": [["gifting", "returns-policy-2026"]],
+      "acceptableDocs": ["faq", "contact"],
+      "mustInclude": ["store credit|gift card", "order number|gift receipt"],
+      "mustNotInclude": ["at checkout"],
+      "reference": "If you received the piece as a gift, email hello@parurelondon.com with the order number or the gift receipt from the parcel. Unworn gifts can be returned within 30 days for store credit, sent as a gift card."
+    },
+    {
+      "id": "f11-three-piece-discount",
+      "category": "unanswerable",
+      "question": "do i get a discount for buying 3 pieces of the same collection?",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["solar-collection", "marine-collection", "lunar-collection", "returns-policy-2026", "about", "faq"],
+      "mustInclude": [],
+      "mustNotInclude": ["only be returned complete"],
+      "reference": "We don't list a discount for three pieces. The saving is on the full set of five (for example SOLAR £225 instead of £250). Points to hello@parurelondon.com."
+    },
+    {
+      "id": "f12-exchange-set",
+      "category": "unanswerable",
+      "question": "Can I exchange a set for a different size or style?",
+      "expect": "partial_or_decline",
+      "requiredDocs": [],
+      "acceptableDocs": ["returns-policy-2026", "solar-collection", "marine-collection", "lunar-collection", "size-guide", "faq"],
+      "mustInclude": [],
+      "mustNotInclude": ["specific sizes for rings"],
+      "reference": "We don't list exchanges. A set can be returned complete, all five pieces unworn in original packaging, within 30 days. Points to hello@parurelondon.com."
     }
   ]
 }
