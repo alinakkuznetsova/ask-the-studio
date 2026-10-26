@@ -1,0 +1,36 @@
+name: evals
+
+# evals call the openai api, so they run on demand and on pull requests that
+# touch retrieval, prompts or the knowledge base, not on every push
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/**"
+      - "knowledge-base/**"
+      - "evals/**"
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    # forks do not get secrets, so skip rather than fail
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: run evals with quality gate
+        run: npm run eval -- --gate
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: evals/reports/
