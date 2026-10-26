@@ -725,6 +725,17 @@
       "mustInclude": ["yes", "30 days", "unworn"],
       "mustNotInclude": [],
       "reference": "Yes, you can return the SOLAR bangle unworn in its original packaging within 30 days of delivery. If it was bought as part of the SOLAR set, the whole set must be returned. Email hello@parurelondon.com to start."
+    },
+    {
+      "id": "f9-faulty-item",
+      "category": "multi_doc",
+      "question": "How do I return a faulty item?",
+      "expect": "answer",
+      "requiredDocs": [["returns-policy-2026"]],
+      "acceptableDocs": ["warranty-and-repairs", "faq", "contact"],
+      "mustInclude": ["photo", "14 days", "replacement|replace"],
+      "mustNotInclude": [],
+      "reference": "Email hello@parurelondon.com within 14 days of delivery with your order number and a photo of the fault. We'll offer a replacement or a full refund, including delivery costs, and send a prepaid return label. Faults that appear later are covered by the 12-month warranty."
     }
   ]
 }
