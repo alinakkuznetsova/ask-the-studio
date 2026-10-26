@@ -10,6 +10,15 @@ const pageFromHash = (): Page => (location.hash === "#/evals" ? "evals" : "ask")
 
 export function App() {
   const [page, setPage] = useState<Page>(pageFromHash);
+  // bumping the key remounts the chat, which clears the conversation
+  const [chatKey, setChatKey] = useState(0);
+  // the logo and "Ask" always lead to a fresh home screen. on the evals page
+  // the hash change handles navigation; on the ask page the hash is already
+  // "#/", so the browser does nothing and we reset the chat ourselves
+  const goHome = () => {
+    if (page === "ask") setChatKey((k) => k + 1);
+    scrollTo({ top: 0 });
+  };
 
   useEffect(() => {
     const onHash = () => setPage(pageFromHash());
@@ -24,12 +33,12 @@ export function App() {
   return (
     <>
       <header className="bar">
-        <a href="#/" className="brand" aria-label="Ask the Studio home">
+        <a href="#/" className="brand" aria-label="Ask the Studio home" onClick={goHome}>
           <img src="/parure-logo.svg" alt="Parure" width={108} height={26} />
           <span className="brand-sub">Ask the Studio</span>
         </a>
         <nav aria-label="Main">
-          <a href="#/" aria-current={page === "ask" ? "page" : undefined}>
+          <a href="#/" aria-current={page === "ask" ? "page" : undefined} onClick={goHome}>
             Ask
           </a>
           <a href="#/evals" aria-current={page === "evals" ? "page" : undefined}>
@@ -37,7 +46,7 @@ export function App() {
           </a>
         </nav>
       </header>
-      {page === "ask" ? <Chat /> : <Evals />}
+      {page === "ask" ? <Chat key={chatKey} /> : <Evals />}
     </>
   );
 }
