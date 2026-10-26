@@ -67,11 +67,13 @@ export interface CaseResult {
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // case-insensitive; whole-word when the term starts or ends with a letter or
-// digit, so "arr" does not match "arrive" and "£65" does not match "£650"
+// digit, so "arr" does not match "arrive" and "£65" does not match "£650".
+// a word may take a plain ending ("pearl" matches "pearls", "shower" matches
+// "showering"); numbers may not, so "30 days" never matches "300 days"
 export function containsTerm(text: string, term: string): boolean {
   const t = term.trim();
   const pre = /^[a-z0-9]/i.test(t) ? "\\b" : "";
-  const post = /[a-z0-9]$/i.test(t) ? "\\b" : "";
+  const post = /[a-z]$/i.test(t) ? "(?:s|es|ing|ed)?\\b" : /[0-9]$/i.test(t) ? "\\b" : "";
   return new RegExp(`${pre}${escapeRe(t)}${post}`, "i").test(text);
 }
 

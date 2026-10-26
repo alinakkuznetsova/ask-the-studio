@@ -27,6 +27,9 @@ describe("eval scoring", () => {
     expect(containsTerm("It will arrive soon", "arr")).toBe(false);
     expect(containsTerm("It's £650", "£65")).toBe(false);
     expect(containsTerm("It's £65.", "£65")).toBe(true);
+    expect(containsTerm("freshwater pearls", "pearl")).toBe(true);
+    expect(containsTerm("before showering", "shower")).toBe(true);
+    expect(containsTerm("pearly", "pearl")).toBe(false);
   });
 
   it("supports alternatives and banned phrases", () => {
