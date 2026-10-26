@@ -92,7 +92,12 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
         : !r.answerable || pointsToSupport;
 
   const factFailures = checkFacts(r.answer, c);
-  const factsPass = c.mustInclude.length || c.mustNotInclude.length ? factFailures.length === 0 : null;
+  // an answer with sources must also number them inline, so readers can tell
+  // which sentence each source supports
+  const missingMarkers = r.answerable && r.sources.length > 0 && !/\[\d+\]/.test(r.answer);
+  if (missingMarkers) factFailures.push("no inline citation numbers");
+  const factsPass =
+    c.mustInclude.length || c.mustNotInclude.length || missingMarkers ? factFailures.length === 0 : null;
 
   const allowed = new Set([...c.requiredDocs.flat(), ...c.acceptableDocs]);
   const citationPrecision =

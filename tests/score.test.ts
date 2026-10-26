@@ -48,6 +48,13 @@ describe("eval scoring", () => {
     expect(s.quoteVerification).toBe(1);
   });
 
+  it("fails an answer that lists sources but never numbers them inline", () => {
+    const src = { n: 1, chunkId: "shipping#all", docId: "shipping", title: "", section: "", quotes: ["q"], archived: false, effectiveFrom: "" };
+    const s = scoreCase(base, result({ answer: "Free over £100.", sources: [src] }), { correctness: 5, grounded: true, reason: "" });
+    expect(s.factFailures).toContain("no inline citation numbers");
+    expect(s.pass).toBe(false);
+  });
+
   it("accepts a partial answer that points to support, or a decline", () => {
     const c: EvalCase = { ...base, expect: "partial_or_decline", requiredDocs: [], mustInclude: [], mustNotInclude: [] };
     expect(scoreCase(c, result({ answerable: false }), null).declineCorrect).toBe(true);
