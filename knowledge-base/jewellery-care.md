@@ -19,7 +19,7 @@ Buff with a microfibre or jewellery polishing cloth to brighten the surface. Thi
 Store your pieces somewhere dry and cool, away from direct sunlight. Keep them off wood and out of bathrooms or damp areas.
 
 ## When to take it off
-Remove your jewellery before sweating, swimming, or applying skincare, perfume or hair products. Jewellery isn't made to be worn 24/7, so rotate your pieces.
+We recommend taking your jewellery off before showering. Remove it before sweating, swimming, or applying skincare, perfume or hair products. Jewellery isn't made to be worn 24/7, so rotate your pieces.
 
 ## Pearls and stones
 Natural stones and pearls need extra care. See the Pearl Care guide for MARINE pieces.
