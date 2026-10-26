@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.3",
+  "version": "2026-10-26.4",
   "asOf": "2026-10-26",
   "notes": "asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email).",
   "cases": [
@@ -215,6 +215,17 @@
       "mustInclude": ["remove|take it off|take off|taking it off|before swimming"],
       "mustNotInclude": ["yes, you can swim"],
       "reference": "The PVD-coated steel is highly water and sweat resistant, but the care guide says to remove jewellery before swimming, and pearls must be kept out of water."
+    },
+    {
+      "id": "c8-swimming-short",
+      "category": "conflict",
+      "question": "Can I go swimming in my jewellery?",
+      "expect": "answer",
+      "requiredDocs": [["jewellery-care"]],
+      "acceptableDocs": ["faq", "materials", "pearl-care"],
+      "mustInclude": ["remove|take it off|take off|taking it off|taking your jewellery off|before swimming"],
+      "mustNotInclude": ["yes, you can", "safe to swim"],
+      "reference": "We recommend taking jewellery off before swimming. The steel and PVD coating are highly water and sweat resistant, but MARINE pearls must be kept out of water entirely."
     },
     {
       "id": "c5-ring-sizes-general",
