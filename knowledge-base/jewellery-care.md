@@ -9,7 +9,7 @@ url: https://parurelondon.com/jewelry-care
 # Jewellery Care
 
 ## Cleaning
-Clean your jewellery with a small amount of mild soap in lukewarm water and a soft toothbrush, focusing on hard-to-reach areas. Rinse if needed and dry with a soft, lint-free cloth.
+Clean your jewellery with a small amount of mild soap in lukewarm water and a soft toothbrush, focusing on hard-to-reach areas. Rinse if needed and dry with a soft, lint-free cloth. Never use soap or a toothbrush on MARINE pearls: wipe them with a soft, slightly damp cloth instead.
 
 Don't scrub hard: even PVD gold-plated stainless steel can dull over time. Avoid chemical cleaners and alcohol wipes.
 
@@ -22,4 +22,4 @@ Store your pieces somewhere dry and cool, away from direct sunlight. Keep them o
 We recommend taking your jewellery off before showering. Remove it before sweating, swimming, or applying skincare, perfume or hair products. Jewellery isn't made to be worn 24/7, so rotate your pieces.
 
 ## Pearls and stones
-Natural stones and pearls need extra care. The cleaning advice above doesn't apply to MARINE pearls: never use soap, jewellery cleaner or a toothbrush on them. See the Pearl Care guide for MARINE pieces.
+Natural stones and pearls need extra care. See the Pearl Care guide for MARINE pieces.

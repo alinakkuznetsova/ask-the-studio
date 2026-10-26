@@ -21,4 +21,4 @@ You can enter a different delivery address at checkout to send a gift straight t
 Digital gift cards are available from £25 to £250 and are sent by email. They're valid for 24 months and can be used across all collections. Gift cards can't be exchanged for cash.
 
 ## Returning a gift
-Gift recipients can return unworn items for store credit. See the Returns and Refunds Policy for details.
+If you received a Parure piece as a gift, you can return it unworn within 30 days of delivery for store credit, sent to you as a gift card by email. Email hello@parurelondon.com with the order number or the gift receipt included in the parcel. The person who bought the gift won't be told.
