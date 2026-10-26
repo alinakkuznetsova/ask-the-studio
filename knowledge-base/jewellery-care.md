@@ -22,4 +22,4 @@ Store your pieces somewhere dry and cool, away from direct sunlight. Keep them o
 We recommend taking your jewellery off before showering. Remove it before sweating, swimming, or applying skincare, perfume or hair products. Jewellery isn't made to be worn 24/7, so rotate your pieces.
 
 ## Pearls and stones
-Natural stones and pearls need extra care. See the Pearl Care guide for MARINE pieces.
+Natural stones and pearls need extra care. The cleaning advice above doesn't apply to MARINE pearls: never use soap, jewellery cleaner or a toothbrush on them. See the Pearl Care guide for MARINE pieces.

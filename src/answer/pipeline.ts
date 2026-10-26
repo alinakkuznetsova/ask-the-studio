@@ -269,8 +269,11 @@ async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions):
   const sentencesCited = parts.filter((x) => x.labels.length > 0).length;
   const display = rewriteMarkers(joinSentences(parts), validLabels);
   const { order } = display;
-  // add the contact line unless the answer already gives the email
-  const needsContact = parsed.partial && !display.text.includes(settings.supportEmail);
+  // add the contact line unless the answer already gives the email. the
+  // model does not always flag a partial answer, so an answer that says we
+  // don't list something gets the line too: it should never be a dead end
+  const saysNotListed = /\b(?:don't|do not|doesn't|does not) (?:list|include|mention|show)\b|\bnot (?:listed|included)\b/i.test(display.text);
+  const needsContact = (parsed.partial || saysNotListed) && !display.text.includes(settings.supportEmail);
   const text = redactAnswer(needsContact ? `${display.text}\n\n${PARTIAL_LINE}` : display.text);
   // sources cited with a quote but not marked inline still get listed, after the inline ones
   for (const v of valid) if (!order.includes(v.source)) order.push(v.source);
