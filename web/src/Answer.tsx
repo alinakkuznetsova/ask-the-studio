@@ -289,7 +289,7 @@ export function Answer({ text, status, result, supportEmail, onAsk, staff = fals
 
       {stopped && <p className="stopped">Stopped.</p>}
 
-      {settled && declined && result.declineReason !== "off_topic" && (
+      {settled && declined && (result.declineReason === "not_in_sources" || result.declineReason === "unverified") && (
         <a className="mail" href={`mailto:${supportEmail}`}>
           Email the studio
         </a>

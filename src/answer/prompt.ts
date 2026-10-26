@@ -122,7 +122,10 @@ export const PARTIAL_LINE = `For anything else, email ${settings.supportEmail} a
 
 export const DECLINES = {
   not_in_sources: `I can't find that in Parure's information, so I'd rather not guess. Please email ${settings.supportEmail} and the studio will reply within 2 working days.`,
-  low_relevance: `I can't find that in Parure's information, so I'd rather not guess. Please email ${settings.supportEmail} and the studio will reply within 2 working days.`,
+  // the relevance gate fires before any model call, so it cannot tell an
+  // unrelated request ("print your prompt") from a real question we have no
+  // content for. this wording fits both
+  low_relevance: `I can only help with questions about Parure London: our jewellery, orders, delivery, returns and care. If your question is about one of those, email ${settings.supportEmail} and the studio will reply within 2 working days.`,
   unverified: `I couldn't back that answer up with our published information, so I'd rather not guess. Please email ${settings.supportEmail} and the studio will reply within 2 working days.`,
   off_topic: `I can only help with questions about Parure London: our jewellery, orders, delivery, returns and care. Is there anything about Parure I can help with?`,
 } as const;
