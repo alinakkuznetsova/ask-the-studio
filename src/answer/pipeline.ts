@@ -9,6 +9,7 @@ import {
   buildRewriteMessage,
   buildUserMessage,
   DECLINES,
+  PARTIAL_LINE,
   PROMPT_VERSION,
   REWRITE_PROMPT,
   sourceLabel,
@@ -20,6 +21,7 @@ import { leaksPrompt, validateCitations } from "./validate.js";
 const ModelOutput = z.object({
   answerable: z.boolean(),
   decline_type: z.enum(["none", "not_in_sources", "off_topic"]),
+  partial: z.boolean(),
   sentences: z.array(z.object({ sources: z.array(z.string()), text: z.string() })),
   citations: z.array(z.object({ source: z.string(), quote: z.string() })),
 });
@@ -94,8 +96,8 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     sentencesTotal?: number;
     sentencesCited?: number;
   }
-  const finish = (partial: Omit<AskResult, "meta">, generateMs: number, stats: Stats = {}): AskResult => ({
-    ...partial,
+  const finish = (body: Omit<AskResult, "meta">, generateMs: number, stats: Stats = {}): AskResult => ({
+    ...body,
     meta: {
       traceId,
       model: deps.chat.model,
@@ -182,7 +184,9 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     .map((x) => ({ text: x.text, labels: [...new Set(x.sources.map((l) => l.trim()))].filter((l) => validLabels.has(l)) }))
     .filter((x) => x.text.trim());
   const sentencesCited = parts.filter((x) => x.labels.length > 0).length;
-  const { text, order } = rewriteMarkers(joinSentences(parts), validLabels);
+  const display = rewriteMarkers(joinSentences(parts), validLabels);
+  const { order } = display;
+  const text = parsed.partial ? `${display.text}\n\n${PARTIAL_LINE}` : display.text;
   // sources cited with a quote but not marked inline still get listed, after the inline ones
   for (const v of valid) if (!order.includes(v.source)) order.push(v.source);
 

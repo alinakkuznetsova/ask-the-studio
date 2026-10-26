@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ask } from "../src/answer/pipeline.js";
-import { CANARY, DECLINES } from "../src/answer/prompt.js";
+import { CANARY, DECLINES, PARTIAL_LINE } from "../src/answer/prompt.js";
 import { cited, declined, FakeChat, labelFor, testRetriever } from "./helpers.js";
 
 const retriever = await testRetriever();
@@ -92,6 +92,16 @@ describe("ask pipeline", () => {
     const r = await ask(Q, { retriever, chat });
     expect(r.answer).toBe("Returns are accepted when:[1]\n\n- items are unworn[1]\n- they are in the original packaging[1]\n\nEmail hello@parurelondon.com to start.");
     expect(r.meta.sentencesCited).toBe(3);
+  });
+
+  it("adds the contact line in code when part of the question is not covered", async () => {
+    const chat = new FakeChat((m) => {
+      const s = labelFor(m, "orders delivered on or after 1 January 2026");
+      return cited([[s, "Returns are accepted within 30 days."], [null, "We don't list engraving."]], [[s, "within 30 days of delivery"]], true);
+    });
+    const r = await ask(Q, { retriever, chat });
+    expect(r.answer).toBe(`Returns are accepted within 30 days.[1] We don't list engraving.\n\n${PARTIAL_LINE}`);
+    expect(r.answer).toContain("hello@parurelondon.com");
   });
 
   it("tells the model today's date so time-limited offers can be applied", async () => {
