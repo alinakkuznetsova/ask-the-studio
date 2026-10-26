@@ -11,6 +11,8 @@ url: https://parurelondon.com/shop/marine
 
 Inspired by the sea and the 17th-century fashion for pearls. MARINE pairs PVD gold-plated stainless steel with deep blue enamel and natural freshwater pearls. Because every pearl is natural, each one is slightly different in shape and lustre.
 
+Like every Parure collection, MARINE is a parure: five matching pieces designed to be worn together or apart.
+
 ## Pieces and prices
 - **MARINE pearl drop earrings:** £55. Gold hoops with a single freshwater pearl drop.
 - **MARINE wave cuff:** £60. Sculpted wave cuff with a blue enamel line, one size.

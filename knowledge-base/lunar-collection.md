@@ -11,6 +11,8 @@ url: https://parurelondon.com/shop/lunar
 
 Our first silver-tone collection, inspired by the night sky. LUNAR pieces are polished 316L stainless steel in its natural silver tone, set with star-cut cubic zirconia crystals. LUNAR is not plated, so the colour can't wear off.
 
+Like every Parure collection, LUNAR is a parure: five matching pieces designed to be worn together or apart.
+
 ## Pieces and prices
 - **LUNAR star ring:** £40. A star-cut crystal on a slim band. Available in UK sizes J, L, N and P.
 - **LUNAR crescent earrings:** £45. Crescent moon studs with a crystal point.

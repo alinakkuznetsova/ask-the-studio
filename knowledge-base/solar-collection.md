@@ -11,6 +11,8 @@ url: https://parurelondon.com/shop/solar
 
 Sculptural, gold-plated jewellery inspired by 17th-century parures. SOLAR pieces are built around rounded, dome-like settings detailed with red agate, a natural stone. Every piece is crafted using PVD gold plating over predominantly recycled stainless steel. They are hypoallergenic, nickel-free and designed for everyday wear.
 
+Like every Parure collection, SOLAR is a parure: five matching pieces designed to be worn together or apart.
+
 ## Pieces and prices
 - **SOLAR bracelet:** £40. Fine chain with red agate stones, adjustable clasp.
 - **SOLAR bangle:** £50. Wide sculptural cuff, one size with a small opening.

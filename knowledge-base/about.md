@@ -9,7 +9,9 @@ url: https://parurelondon.com/about
 # About Parure London
 
 ## Who we are
-Parure London is an emerging London jewellery brand. We believe jewellery is a form of self-expression, not just an accessory. We design sculptural, gold-plated pieces inspired by 17th-century parures and release them as drop-based collections of matching rings, earrings, necklaces and bracelets, designed to be worn together or apart.
+Parure London is an emerging London jewellery brand. We believe jewellery is a form of self-expression, not just an accessory.
+
+The whole brand is built on the parure: a matching set of jewellery designed to be worn together, which became a symbol of elegance in 17th-century France. Every Parure collection is a modern parure of five matching pieces (a necklace, earrings, a ring and two pieces for the wrist) designed to be worn together or apart, released as a limited drop with its own story and materials.
 
 ## Our values
 - **Individuality:** jewellery should reflect the wearer, not follow trends.
