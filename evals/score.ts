@@ -53,6 +53,9 @@ export interface CaseResult {
   tokens: { input: number; output: number };
   sources: string[];
   retrieved: string[];
+  followUps: string[];
+  // how many suggested follow-ups got a real answer when actually asked
+  followUpsAnswered: number | null;
   error?: string;
 }
 
@@ -144,6 +147,8 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     tokens: r.meta.tokens,
     sources: r.sources.map((s) => s.chunkId),
     retrieved: r.meta.retrieved.map((x) => x.chunkId),
+    followUps: r.followUps,
+    followUpsAnswered: null,
   };
 }
 
@@ -170,6 +175,7 @@ export interface Summary {
   quoteVerification: number | null;
   sentenceCoverage: number | null;
   citationPrecision: number | null;
+  followUpAnswerRate: number | null; // share of suggested follow-ups that got an answer
   latencyP50: number | null;
   latencyP95: number | null;
   costPerAnswerUsd: number | null;
@@ -199,6 +205,11 @@ export function summarise(results: CaseResult[]): Summary {
     quoteVerification: mean(vals((r) => r.quoteVerification)),
     sentenceCoverage: mean(vals((r) => r.sentenceCoverage)),
     citationPrecision: mean(vals((r) => r.citationPrecision)),
+    followUpAnswerRate: (() => {
+      const asked = results.filter((r) => r.followUpsAnswered !== null);
+      const total = asked.reduce((n, r) => n + r.followUps.length, 0);
+      return total ? asked.reduce((n, r) => n + r.followUpsAnswered!, 0) / total : null;
+    })(),
     latencyP50: percentile(results.map((r) => r.latencyMs), 50),
     latencyP95: percentile(results.map((r) => r.latencyMs), 95),
     costPerAnswerUsd: mean(costs),

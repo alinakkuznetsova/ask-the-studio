@@ -12,7 +12,7 @@ const base: EvalCase = {
 
 function result(p: Partial<AskResult> & { retrieved?: string[]; checked?: number; dropped?: number }): AskResult {
   return {
-    answer: p.answer ?? "", answerable: p.answerable ?? true, sources: p.sources ?? [], declineReason: p.declineReason,
+    answer: p.answer ?? "", answerable: p.answerable ?? true, sources: p.sources ?? [], followUps: [], declineReason: p.declineReason,
     meta: {
       traceId: "t", model: "m", promptVersion: "p", latencyMs: { rewrite: 0, retrieve: 0, generate: 0, total: 100 },
       tokens: { input: 0, output: 0 }, costUsd: 0.001,

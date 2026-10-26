@@ -72,6 +72,8 @@ export interface AskResult {
   answerable: boolean;
   declineReason?: DeclineReason;
   sources: Citation[];
+  // suggested next questions, only on answered questions
+  followUps: string[];
   meta: AskMeta;
 }
 

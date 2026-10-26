@@ -24,6 +24,7 @@ const ModelOutput = z.object({
   decline_type: z.enum(["none", "not_in_sources", "off_topic"]),
   partial: z.boolean(),
   sentences: z.array(z.object({ sources: z.array(z.string()), text: z.string() })),
+  follow_ups: z.array(z.string()),
   citations: z.array(z.object({ source: z.string(), quote: z.string() })),
 });
 
@@ -58,6 +59,24 @@ export function cleanInput(s: string): string {
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
     .replace(/[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u2069\uFEFF]/g, "")
     .trim();
+}
+
+// follow-up suggestions are model output shown as buttons, so they get the
+// same scrutiny as answers: short, question-shaped, no markup, no leaks,
+// no personal data, no repeats of the question just asked
+export function cleanFollowUps(raw: string[], question: string): string[] {
+  const seen = new Set([question.toLowerCase().replace(/\W+/g, " ").trim()]);
+  const out: string[] = [];
+  for (const r of raw) {
+    if (/[<>{}]/.test(r)) continue; // no markup, ever
+    const f = redactAnswer(cleanInput(r)).replace(/\s+/g, " ");
+    const key = f.toLowerCase().replace(/\W+/g, " ").trim();
+    if (!f.endsWith("?") || f.length < 8 || f.length > 90 || seen.has(key) || leaksPrompt(f) || /removed\]/.test(f)) continue;
+    seen.add(key);
+    out.push(f);
+    if (out.length === 3) break;
+  }
+  return out;
 }
 
 export async function ask(question: string, deps: PipelineDeps, opts: AskOptions = {}): Promise<AskResult> {
@@ -131,7 +150,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     },
   });
   const decline = (reason: DeclineReason, generateMs = 0, stats: Stats = {}) =>
-    finish({ answer: DECLINES[reason], answerable: false, declineReason: reason, sources: [] }, generateMs, stats);
+    finish({ answer: DECLINES[reason], answerable: false, declineReason: reason, sources: [], followUps: [] }, generateMs, stats);
 
   // 3. relevance gate: nothing in the kb is close, so do not spend a model call
   if (bestSimilarity < settings.minSimilarity) return decline("low_relevance");
@@ -217,7 +236,7 @@ export async function ask(question: string, deps: PipelineDeps, opts: AskOptions
     };
   });
 
-  return finish({ answer: text, answerable: true, sources }, generateMs, {
+  return finish({ answer: text, answerable: true, sources, followUps: cleanFollowUps(parsed.follow_ups, q) }, generateMs, {
     dropped,
     checked,
     sentencesTotal: parts.length,

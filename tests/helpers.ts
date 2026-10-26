@@ -42,14 +42,20 @@ export function labelFor(messages: ChatMessage[], phrase: string): string {
 }
 
 // builds the model's json: one sentence per [label, text] pair, with quotes
-export function cited(sentences: [label: string | null, text: string][], quotes: [label: string, quote: string][], partial = false) {
+export function cited(
+  sentences: [label: string | null, text: string][],
+  quotes: [label: string, quote: string][],
+  partial = false,
+  followUps: string[] = [],
+) {
   return {
     answerable: true,
     decline_type: "none",
     partial,
     sentences: sentences.map(([l, text]) => ({ sources: l ? [l] : [], text })),
+    follow_ups: followUps,
     citations: quotes.map(([source, quote]) => ({ source, quote })),
   };
 }
 
-export const declined = (type: "off_topic" | "not_in_sources") => ({ answerable: false, decline_type: type, partial: false, sentences: [], citations: [] });
+export const declined = (type: "off_topic" | "not_in_sources") => ({ answerable: false, decline_type: type, partial: false, sentences: [], follow_ups: [], citations: [] });

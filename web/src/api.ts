@@ -17,6 +17,7 @@ export interface AskResult {
   answerable: boolean;
   declineReason?: "not_in_sources" | "off_topic" | "low_relevance" | "unverified";
   sources: Citation[];
+  followUps: string[];
   meta: {
     traceId: string;
     model: string;
@@ -122,6 +123,7 @@ export interface EvalSummary {
   quoteVerification: number | null;
   sentenceCoverage: number | null;
   citationPrecision: number | null;
+  followUpAnswerRate: number | null;
   latencyP50: number | null;
   latencyP95: number | null;
   costPerAnswerUsd: number | null;

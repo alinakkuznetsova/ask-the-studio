@@ -4,6 +4,7 @@
 //   npm run eval:baseline             vector-only, no version filtering, no contextual headers
 //   npm run eval -- --gate            exit 1 if any threshold in thresholds.json fails (ci)
 //   npm run eval -- --only c1-return-window,o2-prompt-injection
+//   npm run eval -- --no-follow-ups   skip asking each suggested follow-up (faster)
 import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -55,13 +56,24 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
       judgeCost += costUsd(cfg.JUDGE_MODEL, res.usage.input, res.usage.output) ?? 0;
       j = { correctness: res.correctness, grounded: res.grounded, focused: res.focused, reason: res.reason };
     }
-    return scoreCase(c, r, j);
+    const scored = scoreCase(c, r, j);
+    // ask each suggested follow-up for real: a suggestion the assistant
+    // then declines would look broken, so this is measured, not assumed
+    if (r.followUps.length && !flag("no-follow-ups")) {
+      let answered = 0;
+      for (const f of r.followUps) {
+        const fr = await ask(f, { retriever, chat }, { now: new Date(`${dataset.asOf}T12:00:00Z`) });
+        if (fr.answerable) answered++;
+      }
+      scored.followUpsAnswered = answered;
+    }
+    return scored;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return {
       id: c.id, category: c.category, question: c.question, expect: c.expect, answer: "", answerable: false,
       retrievalRecall: null, declineCorrect: false, factsPass: false, factFailures: [], citationPrecision: null,
-      quoteVerification: null, sentenceCoverage: null, judge: null, pass: false, latencyMs: 0, costUsd: null, tokens: { input: 0, output: 0 },
+      quoteVerification: null, sentenceCoverage: null, judge: null, followUps: [], followUpsAnswered: null, pass: false, latencyMs: 0, costUsd: null, tokens: { input: 0, output: 0 },
       sources: [], retrieved: [], error: message,
     };
   }
@@ -98,6 +110,7 @@ const METRICS: [keyof Summary, string, "pct" | "num" | "ms" | "usd"][] = [
   ["quoteVerification", "Quotes verified verbatim", "pct"],
   ["sentenceCoverage", "Sentences with a verified source", "pct"],
   ["citationPrecision", "Citation precision", "pct"],
+  ["followUpAnswerRate", "Suggested follow-ups answered", "pct"],
   ["latencyP50", "Latency p50", "ms"],
   ["latencyP95", "Latency p95", "ms"],
   ["costPerAnswerUsd", "Cost per answer", "usd"],
