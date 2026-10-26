@@ -14,6 +14,8 @@ import { OpenAIChat } from "../src/answer/llm.js";
 import { PROMPT_VERSION } from "../src/answer/prompt.js";
 import { BASELINE_RETRIEVAL, buildIndex, DEFAULT_RETRIEVAL, openaiClient } from "../src/kb/build.js";
 import { judge, JUDGE_VERSION } from "./judge.js";
+import { propagateAttributes } from "@langfuse/tracing";
+import { initTracing, score, shutdownTracing } from "../src/observability/tracing.js";
 import { DatasetSchema, scoreCase, summarise, type CaseResult, type Summary } from "./score.js";
 
 const args = process.argv.slice(2);
@@ -32,6 +34,10 @@ const dataset = DatasetSchema.parse(JSON.parse(await fs.readFile(path.join(here,
 const cases = dataset.cases.filter((c) => !only || only.includes(c.id));
 
 const cfg = env();
+// with langfuse keys set, every case is a trace tagged with the run, and
+// the scores below are attached to it, so runs can be reviewed and compared there
+const tracing = initTracing(`eval-${variant}`);
+const runId = new Date().toISOString();
 const client = openaiClient();
 const chat = new OpenAIChat(client, cfg.CHAT_MODEL);
 const judgeModel = new OpenAIChat(client, cfg.JUDGE_MODEL);
@@ -39,12 +45,16 @@ const retrievalConfig = variant === "baseline" ? BASELINE_RETRIEVAL : DEFAULT_RE
 const { retriever } = await buildIndex(retrievalConfig);
 const chunkById = new Map(retriever.chunks.map((c) => [c.id, c]));
 
+if (tracing) console.log("tracing to langfuse: each case is a trace with its scores");
 console.log(`\nask the studio evals: ${cases.length} cases, variant=${variant}, model=${cfg.CHAT_MODEL}, prompt=${PROMPT_VERSION}, judge=${JUDGE_VERSION}, as of ${dataset.asOf}\n`);
 
 let judgeCost = 0;
 async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
   try {
-    const r = await ask(c.question, { retriever, chat }, { history: c.history, now: new Date(`${dataset.asOf}T12:00:00Z`) });
+    const r = await propagateAttributes(
+      { tags: ["eval", variant, c.category], metadata: { caseId: c.id, runId, promptVersion: PROMPT_VERSION } },
+      () => ask(c.question, { retriever, chat }, { history: c.history, now: new Date(`${dataset.asOf}T12:00:00Z`) }),
+    );
     let j = null;
     if (r.answerable) {
       const res = await judge(judgeModel, {
@@ -66,6 +76,15 @@ async function runCase(c: (typeof cases)[number]): Promise<CaseResult> {
         if (fr.answerable) answered++;
       }
       scored.followUpsAnswered = answered;
+    }
+    const lf = r.meta.langfuseTraceId;
+    score(lf, "pass", scored.pass, [...scored.factFailures, scored.judge?.reason].filter(Boolean).join("; "));
+    score(lf, "decline-correct", scored.declineCorrect);
+    if (scored.retrievalRecall !== null) score(lf, "retrieval-recall", scored.retrievalRecall);
+    if (scored.judge) {
+      score(lf, "correctness", scored.judge.correctness, scored.judge.reason);
+      score(lf, "grounded", scored.judge.grounded);
+      score(lf, "focused", scored.judge.focused);
     }
     return scored;
   } catch (err) {
@@ -213,6 +232,8 @@ function markdown(full: typeof report, base: typeof report | null): string {
   ];
   return lines.join("\n");
 }
+
+await shutdownTracing();
 
 // ---------- gate ----------
 if (flag("gate")) {

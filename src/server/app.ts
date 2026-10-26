@@ -15,6 +15,7 @@ import type { AskResult } from "../types.js";
 import { DailyCap, RateLimiter, Semaphore, TraceStore } from "./limits.js";
 import { log } from "./logger.js";
 import { redact } from "./redact.js";
+import { score } from "../observability/tracing.js";
 
 const AskBody = z.object({
   question: z.string().trim().min(1, "question is required").max(settings.maxQuestionChars),
@@ -46,6 +47,7 @@ interface TraceRecord {
   answerable: boolean;
   sources: string[];
   promptVersion: string;
+  langfuseTraceId?: string;
 }
 
 export function createApp(opts: AppOptions) {
@@ -148,6 +150,7 @@ export function createApp(opts: AppOptions) {
       answerable: result.answerable,
       sources: result.sources.map((s) => s.chunkId),
       promptVersion: result.meta.promptVersion,
+      langfuseTraceId: result.meta.langfuseTraceId,
     });
     log("info", "ask", {
       traceId: result.meta.traceId,
@@ -234,6 +237,8 @@ export function createApp(opts: AppOptions) {
     await fs.mkdir(settings.dataDir, { recursive: true });
     await fs.appendFile(path.join(settings.dataDir, "feedback.jsonl"), JSON.stringify(entry) + "\n");
     log("info", "feedback", { traceId: entry.traceId, rating: entry.rating });
+    // thumbs up/down also lands on the answer's trace in langfuse
+    score(trace.langfuseTraceId, "user-feedback", parsed.data.rating === "up", entry.comment);
     return c.json({ ok: true });
   });
 
