@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.10",
+  "version": "2026-10-26.11",
   "asOf": "2026-10-26",
   "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email). The realistic group (p) rephrases questions the way customers write them: typos, indirect, casual. The conversation group (t) asks follow-ups that only make sense with the earlier turns.",
   "cases": [
@@ -305,15 +305,15 @@
       "reference": "UK express delivery is free on LUNAR orders until 30 November 2026 (launch offer); otherwise it's £6.95."
     },
     {
-      "id": "u1-solar-bangle-diameter",
+      "id": "u1-solar-necklace-weight",
       "category": "unanswerable",
-      "question": "What is the inner diameter of the SOLAR bangle?",
+      "question": "How much does the SOLAR necklace weigh?",
       "expect": "partial_or_decline",
       "requiredDocs": [],
-      "acceptableDocs": ["solar-bangle", "solar-collection", "size-guide"],
+      "acceptableDocs": ["solar-necklace", "solar-collection", "size-guide", "materials"],
       "mustInclude": [],
-      "mustNotInclude": ["6cm", "6.5cm", "65mm", "60mm", "6 cm"],
-      "reference": "The diameter isn't listed. The bangle is one size with a small opening so it can be gently adjusted; email hello@parurelondon.com for the measurement."
+      "mustNotInclude": ["grams", "gram"],
+      "reference": "The weight isn't listed; points to hello@parurelondon.com. Must not invent a weight."
     },
     {
       "id": "u2-engraving",

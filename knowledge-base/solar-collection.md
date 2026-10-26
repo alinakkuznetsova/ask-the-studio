@@ -15,7 +15,7 @@ Like every Parure collection, SOLAR is a parure: five matching pieces designed t
 
 ## Pieces and prices
 - **SOLAR bracelet:** £40. Fine chain with red agate stones, adjustable clasp.
-- **SOLAR bangle:** £50. Wide sculptural cuff, one size with a small opening.
+- **SOLAR bangle:** £50. Wide sculptural bangle, one size.
 - **SOLAR necklace:** £65. Rounded, dome-like settings with red agate, adjustable clasp.
 - **SOLAR earrings:** £50. Sun-shaped studs with a red agate centre.
 - **SOLAR ring:** £45. Sun-ray ring with a red agate centre, UK size O.

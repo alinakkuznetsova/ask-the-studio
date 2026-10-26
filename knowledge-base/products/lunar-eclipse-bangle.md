@@ -18,4 +18,6 @@ A slim, polished bangle with two overlapping circles at the front, like an eclip
 Polished 316L stainless steel in its natural silver tone. Not plated and not sterling silver. Hypoallergenic.
 
 ## Size
-One size, with a small opening so it can be gently adjusted.
+One size. The bangle is rigid and closed, so it can't be adjusted: it slips on over the hand.
+
+- Inner diameter: 62mm

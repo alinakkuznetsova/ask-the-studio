@@ -17,5 +17,9 @@ Sun-shaped studs with radiating gold rays around a red agate centre.
 ## Materials
 Each piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.
 
+## Details
+- Diameter: 14mm
+- Sold as a pair
+
 ## Please note
 Earrings are non-returnable for hygiene reasons, unless faulty or returned as part of a complete set.

@@ -11,7 +11,7 @@ url: https://parurelondon.com/size-guide
 ## Rings
 SOLAR and MARINE rings come in one size, the average UK size O.
 
-From the LUNAR collection onwards, rings are available in four sizes: UK J, L, N and P.
+LUNAR rings come in four sizes: UK J, L, N and P.
 
 To find your size, measure the inside diameter of a ring that already fits you well and compare it with an online ring size chart.
 
@@ -19,7 +19,7 @@ To find your size, measure the inside diameter of a ring that already fits you w
 Our bracelets and necklaces have adjustable clasps with multiple length options. To measure, wrap a soft tape measure or a piece of string where the piece would sit, then measure the length against a ruler.
 
 ## Bangles and cuffs
-Bangles and cuffs are one size and have a small opening, so they can be gently adjusted to fit most wrists. Don't bend them repeatedly, as this can weaken the metal.
+Bangles and cuffs are one size and rigid, so they can't be adjusted. Each product page lists the inner diameter: compare it with a bangle that already fits you. The MARINE wave cuff has an opening at the back so it slips on from the side, but please don't bend it.
 
 ## Product measurements
 Where we have exact measurements, they are listed on the product page. If a measurement you need is not listed, email hello@parurelondon.com and we will help.

@@ -18,4 +18,4 @@ A fine gold chain set with small, rounded red agate stones, designed to match th
 Each piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.
 
 ## Size
-One length, with an adjustable clasp.
+Adjustable clasp from 16cm to 19cm.

@@ -12,10 +12,13 @@ url: https://parurelondon.com/shop/all/solar-bangle
 **Price:** £50
 
 ## Description
-A wide, sculptural gold cuff with a polished, mirror-like surface. The statement piece of the SOLAR collection.
+A wide, sculptural gold bangle with a polished, mirror-like surface. The statement piece of the SOLAR collection.
 
 ## Materials
 Each piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.
 
 ## Size
-One size, with a small opening so it can be gently adjusted to fit most wrists.
+One size. The bangle is rigid and closed, so it can't be adjusted: it slips on over the hand.
+
+- Inner diameter: 60mm
+- Width: 15mm

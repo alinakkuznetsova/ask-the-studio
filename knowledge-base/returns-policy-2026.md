@@ -15,7 +15,7 @@ This policy applies to all orders delivered on or after 1 January 2026.
 You can return unworn items in their original packaging within 30 days of delivery.
 
 ## Items that can't be returned
-Earrings are non-returnable for hygiene reasons. The only exceptions are earrings that arrive damaged or faulty, and earrings bought as part of a complete set (see below). Items from our final sale are not eligible for return.
+Earrings are non-returnable for hygiene reasons. The only exceptions are earrings that arrive damaged or faulty, and earrings bought as part of a complete set (see below).
 
 ## Returning a set
 Sets are sold at a discount, so a set can only be returned as a complete set: all five pieces, unworn and in their original packaging, within 30 days of delivery. We'll refund the set price. Pieces from a set can't be returned individually.
