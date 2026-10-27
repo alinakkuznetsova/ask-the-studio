@@ -16,7 +16,7 @@ A customer assistant for [Parure London](https://parurelondon.com), my jewellery
 | Answered when it should have declined | 0 |
 | Cost and median time per answer | about 0.15p, 2.8s |
 
-96% is the regression baseline; 82% is the quality figure. The gap (97% vs 82% on the same run) is the LLM judge being lenient (see [What the evals showed](#what-the-evals-showed)).
+96% is the regression baseline; 82% is the quality figure. The final runs used 67 cases; a 68th (t5, below) was added after them. The gap (97% vs 82% on the same run) is the LLM judge being lenient (see [What the evals showed](#what-the-evals-showed)).
 
 ## Run it
 
@@ -27,7 +27,7 @@ npm install
 cp .env.example .env     # add OPENAI_API_KEY; Langfuse keys optional
 npm run dev              # api on :3000
 npm run dev:web          # ui on :5173, in a second terminal
-npm test                 # 76 tests, offline
+npm test                 # 78 tests, offline
 ```
 
 | Command | What it does |
@@ -69,7 +69,7 @@ Reasoning and rejected alternatives: [docs/DESIGN.md](docs/DESIGN.md).
 | Old policies | Filtered out in code, attached only to explain a change | A prompt is a request, a filter is a guarantee |
 | Grounding | Model returns sentences with sources and quotes; code checks every quote word for word and adds the citation numbers | The model left out inline citations in 25 of 26 answers when asked to write them |
 | Declines | Written by the app; nothing relevant means no answer-model call | Consistent wording, the studio's email for real questions it can't answer, little cost for off-topic |
-| Follow-ups | Rewritten into a full question before search; suggestions made by a separate call after the answer | Asked in one call, it suggested questions its own answer had just covered |
+| Follow-ups | Rewritten into a full question for search, plus two passages for the customer's own words; suggestions from a separate call | The rewrite could drag a new question back to the old topic; suggestions in the same call repeated the answer |
 | Security | No tools, input cleaned, prompt-leak check, personal data masked, rate limits | Threat model: [docs/SECURITY.md](docs/SECURITY.md) |
 | Observability | Every question is a Langfuse trace, with eval scores and thumbs attached | How the last regression was found |
 
@@ -96,10 +96,15 @@ Method and full results: [docs/EVALS.md](docs/EVALS.md).
 
 | Area | Change |
 |---|---|
-| Content | Ingest on content changes into Postgres with pgvector; only changed chunks re-embedded; evals run on document changes too |
-| Serving | Stateless API scaled horizontally; rate limits and cache in Redis; bot protection in front |
-| Cost | Smallest model that passes the evals; prompt caching; cost alerts. About £15 a day in model costs at 10,000 questions |
-| Quality | Langfuse dashboards for declines, dropped quotes, latency and cost; weekly sample of real questions into the evals |
+| Outages and limits | Retry with backoff, a fallback model; if OpenAI is down, show the best FAQ match (BM25 runs locally) and the email |
+| Serving | Stateless API scaled horizontally; rate limits and a cache in Redis; bot protection |
+| Content | Postgres with pgvector, so every instance shares one index; re-embed only changed chunks; evals run when documents change |
+| Cost | $0.0019 per answer: 10,000 a day is about $19 (£15); prompt caching; spend alerts |
+| Quality | Langfuse dashboards; real questions and thumbs-down answers labelled into the evals weekly |
+| Handoff | A decline or thumbs-down opens a ticket with the conversation attached |
+| Privacy | Short retention, deletion on request, a data processing agreement with OpenAI |
 | Access | Staff view behind a login; public API without answer metadata |
 
-Built with AI coding tools throughout, as the brief invited. The commit history shows how it developed.
+## How I built it
+
+With Claude (Claude Code) as a pair programmer, which wrote most of the code. I set the direction, tested it as the brand owner, decided what to fix and what to leave, and labelled the evals. The commit history shows how it developed.

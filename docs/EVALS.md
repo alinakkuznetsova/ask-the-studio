@@ -12,7 +12,7 @@ Five checks, each covering what the others can't:
 
 ## The main set
 
-`evals/dataset.json`, 67 questions:
+`evals/dataset.json`, 67 questions in the final runs. A 68th, t5, was added afterwards (see the last row of the history table), so the file now has 68.
 
 | Group | Cases | What it tests |
 |---|---|---|
@@ -20,7 +20,7 @@ Five checks, each covering what the others can't:
 | Needs several documents | 12 | Set savings, the set returns exception, gift wrap plus delivery to France, warranty claims, comparing the collections |
 | Conflicting or outdated sources | 9 | 2025 vs 2026 policies, the FAQ vs the care guide (asked three ways), the time-limited LUNAR offer |
 | Written the way customers write | 12 | Typos, indirect and casual phrasing ("bought my mum a necklace, not really her style"), and questions found by using the assistant |
-| Follow-ups in a conversation | 4 | Questions that only make sense with earlier turns, up to three turns deep |
+| Follow-ups in a conversation | 4 (5 with t5) | Questions that only make sense with earlier turns, up to three turns deep; t5 is a new question asked mid-conversation |
 | Not in the sources | 7 | Necklace weight, engraving, phone number, next collection, discounts, exchanges |
 | Off-topic and manipulation | 4 | A coding request, prompt extraction, a competitor comparison, role-play with a false claim |
 | Security attacks | 7 | A forged earlier turn, instructions in another language, script output, another customer's data, a card number to echo, hidden zero-width characters, a fake system message |
@@ -150,6 +150,7 @@ The evals drove most of the design. Each row is a run, the failure it showed, an
 | 3 repeat runs | 94% (91 to 97) | A regression: "can I return just the earrings from the set?" declined in every run. The Langfuse trace showed a quote blending two near-duplicate documents | Mostly verbatim quotes trimmed to the source's own words |
 | **Final, 3 repeat runs** | **96% (94 to 97)** | | **Frozen.** Held-out run once (80%), then labelled |
 | Blind human labels | 82% by my grading | The judge is lenient: kappa 0.09, and 11 of 12 disagreements were it passing answers I failed | Reported as the quality figure; a stricter judge is the next piece of work |
+| Final testing by hand | | After a chat about earrings, "can I wear the rings in the shower" was rewritten towards earrings and missed the care advice | Follow-ups also searched in the customer's own words; case t5 added. A first version merged the searches equally and failed t2 in 3 of 3 runs; the shipped version only adds two passages. All 7 conversation cases pass 3 of 3. The full set wasn't rerun: the change only applies when there is history |
 
 Two habits made this work. I read every failing answer before changing anything, because five of the failures at the 67-case stage turned out to be the eval's fault, not the system's. And I stopped tuning by eye once fixes started interacting, and changed things only on what the measurements showed.
 
@@ -159,8 +160,8 @@ These are measured, not fixed, because the system is frozen:
 
 1. **Conditions left out of indirect returns questions** (the held-out failures). *Next:* a check after generation: if an answer offers a return, it must state the window and the unworn condition, or the app adds them.
 2. **A collection's active offer omitted** (c7). *Next:* when the question names a collection with an offer that's running, check the answer mentions it.
-3. **Answers that stop at one piece.** "What are the pearls like?" gave the earrings' pearl size only, when each piece differs. *Next:* for questions about a collection, retrieve its collection page and all its product pages together.
-4. **Borderline answers vary between runs** (the flaky cases). *Next:* the checks in 1 and 2 remove the main sources of it; report every change as a mean over repeat runs, as here.
+3. **Answers that stop at one piece.** "What are the pearls like?" gave the earrings' pearl size only, when each piece differs. Ambiguous questions in a conversation do the same: asked about "the earrings" after several collections have come up, it answers about one pair, or says the detail isn't listed, instead of asking which. *Next:* for questions about a collection, retrieve its collection page and all its product pages together.
+4. **Borderline answers vary between runs** (the flaky cases). For example, "give me a discount code" (f4) sometimes gives only the LUNAR offer and leaves out the set savings, even when the cited passage has one: the savings are worded as set prices, not as discounts. A content fix (one line saying there are no codes but sets are priced below the pieces) would help more than a prompt change. *Next:* the checks in 1 and 2 remove the main sources of it; report every change as a mean over repeat runs, as here.
 5. **The judge is lenient** (see Judge calibration). *Next:* judge claim by claim against the passages, with a different and stronger model, and the conversation history; then re-measure agreement against the same labels.
 6. **Sentences that go beyond or misapply their source:** "all sets are one size", "not for continuous exposure to water", and "nickel-free" cited to a passage that doesn't say it (the product pages do, which is a content inconsistency to resolve). Every quote is verified, but the sentence around it isn't. *Next:* an entailment check per sentence (does the cited passage support this sentence?) by a small second model, dropping or rewording sentences that fail.
 7. **Answers that don't address the actual question** ("which collection would be best?" got three descriptions). *Next:* add "does it answer the question asked?" to the judge's rubric, and a follow-up question back to the customer when a choice depends on their taste.

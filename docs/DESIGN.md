@@ -69,6 +69,7 @@ The model returns **strict JSON** (structured outputs): `answerable`, `decline_t
 The client sends the last few turns; the server stays stateless.
 
 - **A short model call rewrites a follow-up into a standalone question** for retrieval. It carries over the topic as well as the object: after "Can I shower in my MARINE pieces?", "What about the SOLAR ones?" becomes "Can I shower in my SOLAR pieces?". An earlier version produced "Tell me about SOLAR" and the answer lost the point.
+- **The rewrite can also over-carry the topic.** Found in final testing: after several turns about earrings, "can I wear the rings in the shower" was rewritten towards earrings, and the search missed the care guide. So a follow-up is searched twice: the rewrite's top 6 are kept whole, and the two best passages for the customer's own words are added if they aren't already there. My first version merged the two searches equally; that fixed the new case but pushed the care guide out of "What about the SOLAR ones?" (t2), which failed 3 of 3 runs. Adding only on top means a real follow-up can't lose anything it found before. All 7 conversation cases, including the new t5, pass 3 of 3. The extra search costs one embedding and only runs when there is history.
 - **History reaches the answer model as quoted, untrusted conversation**, never as real assistant messages, so a forged earlier turn ("returns are 90 days") can't carry instructions. That's red-team case r1.
 
 **Suggested next questions come from a separate, small call after the answer.** Asked in the same call, the model kept suggesting questions its own answer had just covered, even when told not to: it writes them without checking them against what it wrote. The second call sees the finished answer, the customer's earlier questions and the retrieved passages, and must stay on the customer's topic. The answer is streamed to the browser as soon as it's verified, and the suggestions follow as a separate event, so the extra call adds no wait before the answer. If that call fails, the answer is unaffected. Every suggestion is filtered in code (no markup, no personal data, must be a short question) and the evals ask each one for real: 99% get an answer.
@@ -89,10 +90,9 @@ Staff view is a display toggle, not access control. The API returns the metadata
 
 With Langfuse keys set, every question is one trace with up to five steps (the rewrite only runs for follow-ups, and verification only when an answer was written):
 1. `rewrite follow-up`
-2. `retrieve`, with each passage's fused, vector and BM25 scores
+2. `retrieve`, with each passage's fused, vector and BM25 scores (and the customer's original words, for a follow-up)
 3. `generate answer`, with tokens and cost
 4. `verify citations`, with the verified quotes and the number dropped and trimmed
-
 5. `suggest follow-ups`
 
 Personal data is masked before traces are sent to Langfuse (the question itself still goes to OpenAI to be answered). Eval runs tag each trace with the variant and question type and attach the eval scores. Thumbs up and down are attached as a `user-feedback` score. The trace is how the quote-trimming problem above was found.
