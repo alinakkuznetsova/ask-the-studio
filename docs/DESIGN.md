@@ -4,7 +4,7 @@ The README gives the short version. This is the reasoning behind each choice, in
 
 ## Knowledge base
 
-31 markdown documents: policies, guides, an FAQ, an about page, three collection pages and 15 product pages. The brand, its parure concept, the FAQ and the care advice are real. The MARINE and LUNAR collections, prices and some policy details were generated to give the set realistic breadth, then reviewed as the brand owner (see [Content is part of the system](#content-is-part-of-the-system)).
+31 markdown documents: 5 policies, 5 guides, an FAQ, an about page, a contact page, 3 collection pages and 15 product pages. The brand, its parure concept, the FAQ and the care advice are real. The MARINE and LUNAR collections, prices and some policy details were generated to give the set realistic breadth, then reviewed as the brand owner (see [Content is part of the system](#content-is-part-of-the-system)).
 
 It deliberately contains the problems a real support knowledge base has:
 
@@ -15,19 +15,19 @@ It deliberately contains the problems a real support knowledge base has:
 | Outdated general statements | The FAQ says "all pieces come in one size"; LUNAR rings come in four sizes |
 | Near-duplicates | The FAQ's returns answer vs the full returns policy; collection pages vs product pages; "sets are discounted" worded differently in the policy and on each collection page |
 | Exceptions that span sections | Earrings can't be returned, unless faulty or part of a complete set, which must then come back whole, unworn, within 30 days |
-| Time-bound offers | Free express delivery on LUNAR orders until 30 November 2026, vs £6.95 normally |
-| Gaps | No necklace weight, no engraving, no phone number, no order tracking |
+| Time-bound offers | Free UK express delivery on LUNAR orders until 30 November 2026, vs £6.95 normally |
+| Gaps | No necklace weight, no engraving, no phone number, no way to look up an order |
 
 Frontmatter carries `id`, `type`, `effective_from` and `supersedes` / `superseded_by`, validated with zod at ingest, so a typo fails loudly instead of silently corrupting retrieval.
 
 ## Chunking
 
-- **Short documents stay whole** (under 220 words, so every product page). Price, materials and size answer different questions about the same piece and belong together.
+- **Short documents stay whole** (up to 220 words, so every product page). Price, materials and size answer different questions about the same piece and belong together.
 - **Policies stay whole up to 400 words.** Their sections qualify each other: the returns window, then the exceptions, then the rule for sets. Split into sections, an answer could cite the earrings exception without the 30-day window it belongs to, and the evals showed exactly that. Keeping the 300-word returns policy whole fixed it at the cost of a few hundred input tokens when it is retrieved.
-- **Longer documents split on `##` headings**, which map to one topic each in this corpus. Sections under 35 words are merged into a neighbour so no chunk is a context-free fragment.
-- **Every chunk is embedded and keyword-indexed with a contextual header** (`SOLAR Necklace > Size`), so a chunk that only says "40cm, extending to 45cm" is still found by "how long is the SOLAR necklace?".
+- **Longer documents split on `##` headings.** In this corpus that's only the about page and the FAQ; every other document is kept whole. Sections under 35 words are merged into a neighbour so no chunk is a context-free fragment.
+- **Every chunk is embedded and keyword-indexed with a contextual header:** its document title, plus the section for split documents (`Frequently Asked Questions > Do you offer different sizes?`). Every chunk then carries its document's name. The SOLAR Necklace page's text never says "SOLAR" (the title heading is stripped), so without the header a question about the SOLAR necklace couldn't keyword-match it at all.
 
-The result is 37 chunks from 31 documents.
+The result is 37 chunks from 31 documents: 29 kept whole, plus 3 from the about page and 5 from the FAQ.
 
 ## Retrieval
 
@@ -39,7 +39,7 @@ The result is 37 chunks from 31 documents.
 
 **The vector store is an array in memory.** A brute-force scan of 37 chunks takes well under a millisecond. A database would add operational cost and nothing else at this size. Production storage is covered in the README.
 
-**A relevance gate:** if nothing in the knowledge base is even loosely similar (best cosine below 0.2), the question is declined without a model call. That handles "write me a Python script" for free, and cheaply blocks one class of cost abuse. The gate cannot tell an attack from a real question we have no content for, so its wording covers both.
+**A relevance gate:** if nothing in the knowledge base is even loosely similar (best cosine below 0.2), the question is declined before the answer model is called (only a follow-up's rewrite call may already have run). That handles "write me a Python script" for free, and cheaply blocks one class of cost abuse. The gate cannot tell an attack from a real question we have no content for, so its wording covers both.
 
 **Embedding cache:** vectors are cached by `sha256(model + chunk text)`, so editing one document re-embeds only the chunks that changed. Query embeddings are never written to disk, because questions can contain personal data.
 
@@ -58,11 +58,11 @@ The model returns **strict JSON** (structured outputs): `answerable`, `decline_t
 - **Citation numbers are added by code, not written by the model.** Each sentence declares the sources it relies on, and the server appends the numbers after verification. The first version asked for inline `[S1]` markers; the first eval run showed the model omitted them in 25 of 26 answers, despite an explicit rule. Changing the structure fixed what an instruction couldn't.
 - **Every quote is verified in code** against the passage it cites, after normalising case, curly quotes, markdown and whitespace. A quote that isn't there is dropped, and an answer with no verified quote from a current source becomes a decline. This turns "grounded" from an instruction into a guarantee about what reaches the customer.
 - **Mostly verbatim quotes are trimmed, not dropped.** A Langfuse trace showed a correct answer declined because the model began its quote with a collection page's wording ("Because sets are discounted") and finished it with the returns policy's. If the longest word-for-word run is at least 10 words and 60% of the quote, that run is kept, and the *source's* words are what the customer sees. Short or loose matches are still dropped.
-- **Declines are written by the app,** so they're consistent and always give hello@parurelondon.com. There are five kinds: not in the sources, off-topic, low relevance (no model call), unverified, and too long (the answer hit the token limit, recorded separately so it can't hide as a citation problem).
+- **Declines are written by the app,** so they're consistent, and every decline for a real Parure question gives hello@parurelondon.com (off-topic declines just redirect to Parure topics). There are five kinds: not in the sources, off-topic, low relevance (no answer-model call), unverified, and too long (the answer hit the token limit, recorded separately so it can't hide as a citation problem).
 - **Partly answerable questions** answer what's covered and say plainly what isn't ("we don't list the weight"). The app then adds a fixed line pointing to the studio. Because the model doesn't always flag `partial`, the app also adds the line to any answer that says "we don't list", "doesn't include" or "no mention of". An answer should never be a dead end.
 - **Conditions travel with rules.** The prompt requires conditions and exceptions next to the rule they qualify (soap and a toothbrush, but never on pearls). The care guide was also reordered so the pearl warning follows the soap instruction directly: models follow what's close together.
 - **Today's date is sent with every question,** so the LUNAR offer is applied only while it runs. Evals use a fixed as-of date, so expectations stay stable after it ends.
-- **Prompt injection:** the question, history and passages are wrapped as data with angle brackets neutralised, the rules state their own priority, the model has no tools, and a canary token plus an 8-word overlap check replace any answer that leaks the prompt. See [SECURITY.md](SECURITY.md).
+- **Prompt injection:** the question and history are wrapped as data with angle brackets neutralised so they can't close a tag, passages are marked as data (they're trusted content, so not escaped), the rules state their own priority, the model has no tools, and a canary token plus an 8-word overlap check replace any answer that leaks the prompt. See [SECURITY.md](SECURITY.md).
 
 ## Follow-ups and conversations
 
@@ -80,20 +80,22 @@ The client sends the last few turns; the server stays stateless.
 Staff view is a display toggle, not access control. The API returns the metadata to every client. None of it is secret, but in production staff view would sit behind a login and the public API would omit it.
 
 **Other choices:**
-- The page opens as a conversation, with a greeting from the studio and a few topics. The question box types out example questions while it's empty.
+- The page opens as a conversation, with a greeting from the studio and a few topics. On the home screen, the question box types out example questions while it's empty.
 - Answers stream, revealed at a steady reading pace.
 - A sent question scrolls to the top with the answer writing in below, and the page doesn't scroll while the answer streams.
 - The design follows Parure's own site: colours from its Webflow variables and Libre Baskerville, self-hosted so the Content Security Policy can stay strict.
 
 ## Observability
 
-With Langfuse keys set, every question is one trace with four steps:
+With Langfuse keys set, every question is one trace with up to five steps (the rewrite only runs for follow-ups, and verification only when an answer was written):
 1. `rewrite follow-up`
 2. `retrieve`, with each passage's fused, vector and BM25 scores
 3. `generate answer`, with tokens and cost
-4. `verify citations`, with the kept, dropped and trimmed quotes
+4. `verify citations`, with the verified quotes and the number dropped and trimmed
 
-Then `suggest follow-ups` as its own step. Personal data is masked before anything leaves the server. Eval runs tag each trace with the variant and question type and attach the eval scores. Thumbs up and down are attached as a `user-feedback` score. The trace is how the quote-trimming problem above was found.
+5. `suggest follow-ups`
+
+Personal data is masked before traces are sent to Langfuse (the question itself still goes to OpenAI to be answered). Eval runs tag each trace with the variant and question type and attach the eval scores. Thumbs up and down are attached as a `user-feedback` score. The trace is how the quote-trimming problem above was found.
 
 ## Content is part of the system
 

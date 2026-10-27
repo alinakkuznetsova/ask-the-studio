@@ -41,11 +41,11 @@ The three example questions from the brief are cases s9 (silver hypoallergenic),
 | Useful follow-up suggestions | Judge: every suggestion on the customer's topic and not already answered |
 | Latency, cost | p50 and p95 end to end; USD per answer from token counts |
 
-Every report records the prompt version, judge rubric version, models, dataset version and as-of date. Judge scores are only compared at the same rubric version.
+Every report records the prompt version, judge rubric version, models, dataset version and as-of date. I only compared judge scores at the same rubric version; the runner records it but doesn't enforce it.
 
 ## Final results
 
-Frozen system: prompt `2026-10-26.13`, judge rubric `2026-10-26.5`, dataset `2026-10-26.13`, `gpt-4.1-mini` for answers and judging, as of 26 October 2026. Each figure is the mean of 3 runs, with the range in brackets.
+Frozen system: prompt `2026-10-26.13`, judge rubric `2026-10-26.5`, dataset `2026-10-26.13`, `gpt-4.1-mini` for answers and judging, as of 26 October 2026. Where a range is shown, the figure is the mean of 3 runs with the range in brackets (see the note under the table).
 
 | Metric | Full system | Baseline |
 |---|---|---|
@@ -64,12 +64,12 @@ Frozen system: prompt `2026-10-26.13`, judge rubric `2026-10-26.5`, dataset `202
 | Latency, median and p95 | 2.8s, 4.1s | 3.2s, 5.3s |
 | Cost per answer | $0.0019 (about 0.15p) | $0.0018 |
 
-Rows without a range are from the first of the three runs; their spread across runs was within a point or two.
+Pass rate, recall, decline accuracy, key facts, correctness, grounded and focused are means of the 3 runs; quotes, citation precision, follow-ups, latency and cost are from run 1.
 
 The baseline is vector-only retrieval with old policy versions mixed in and no contextual headers. Both use the same prompt, model and judge, so the difference is retrieval design alone.
 
 The ranges don't overlap, so the gap is real. Where it comes from:
-- **Retrieval.** The baseline never found the SOLAR necklace page for "how long is it?" (s8, 0% recall, failed every run). Vector search blurs product names and bare measurements; BM25 and the "SOLAR Necklace > Size" header find them.
+- **Retrieval.** The baseline never found the SOLAR necklace page for "how long is it?" (s8, 0% recall, failed every run). Vector search blurs product names and bare measurements; BM25 matches "SOLAR necklace" exactly, helped by the page title in each chunk's header.
 - **Conflicting sources.** For the short "can I swim in my jewellery?" (c8), the baseline left out the care guide's advice to take jewellery off before swimming in every run. The FAQ's "waterproof" claim won.
 - **Conversation.** "What about the SOLAR ones?" after a shower question (t2) failed every run on the judge's correctness score. I haven't traced this one; the required documents were retrieved, so the likely difference is how passages are ranked and labelled.
 
@@ -83,7 +83,7 @@ One case goes the other way: the baseline passes c7 (the LUNAR offer) every time
 
 ## Held-out set
 
-`evals/heldout.json`: 10 questions written by the brand owner after the system was frozen, in customers' own words, and never used for tuning. Run once.
+`evals/heldout.json`: 10 questions written by the brand owner near the end, in customers' own words, and never used for tuning. One change came after they were written (trimming mostly verbatim quotes), driven by a main-set regression found in a trace, not by these questions. Run once, on the frozen system.
 
 | | Main set | Held-out |
 |---|---|---|
@@ -91,7 +91,7 @@ One case goes the other way: the baseline passes c7 (the LUNAR offer) every time
 | Grounded | 100% | 100% |
 | False answers | 0 | 0 |
 
-The gap is the expected cost of tuning on one set: the system does a little better on questions it was developed against. Both held-out failures are the same weakness. "What if I get an ugly pearl?" and "the ring doesn't fit" are returns questions that never say "return", and both answers left out the 30-day window and the unworn condition. The prompt rule that fixed direct returns questions doesn't carry over to indirect ones. It handled the hardest questions well: "is the jewellery nice?" (described the pieces without claiming quality), "delivered but not received" (pointed to the studio without promising a refund), "which is the most popular collection?" (said it isn't listed) and "will it arrive by Friday?" (explained the 1pm dispatch cut-off without guaranteeing it).
+The gap is the expected cost of tuning on one set: the system does a little better on questions it was developed against. Both held-out failures are the same weakness. "What if I get an ugly pearl?" and "the ring doesn't fit" are returns questions that never say "return", and both answers left out the 30-day window (the ring answer also left out the unworn condition). The prompt rule that fixed direct returns questions doesn't carry over to indirect ones. It passed the ones I expected to be hardest: "is the jewellery nice?" (no unsupported claim about quality), "delivered but not received" (no promised refund), "which is the most popular collection?" (didn't name one) and "will it arrive by Friday?" (mentioned the 1pm dispatch cut-off, no guarantee).
 
 ## Counterfactual grounding
 
@@ -104,7 +104,7 @@ The gap is the expected cost of tuning on one set: the system does a little bett
 
 A sixth case deletes the Europe delivery price altogether.
 
-**Result: 6 of 6.** Every answer followed the edit, and every verified quote contained the new wording. The two cases that matter most:
+**Result: 6 of 6.** Every answer followed the edit, and in each case that changed a fact, a verified quote carried the new wording. The two cases that matter most:
 - **Free delivery:** an archived policy still says £75, and the answer gave the edited £150, not either old figure.
 - **The deleted Europe price:** the answer said the price isn't listed. It didn't fall back on the archived 2025 price (£8.95) or invent one.
 
@@ -126,14 +126,14 @@ I labelled all 56 answers from run 1 of the final run. (The 11 declines are chec
 The raw agreement looks high, but kappa near zero means it is almost all chance: the judge says yes to nearly everything, so we agree whenever an answer is good. (A kappa of 0.6 or more would mean it really tracks my judgement.) And the disagreements all point one way: in 11 of 12, the judge passed an answer I failed.
 
 By my labels, 44 of the 56 answers pass, against 54 by the judge. With the 11 declines, that's **82% of the 67 cases** against the automated 97% for the same run. The judge's "100% grounded" becomes **93%**: I found four answers with a claim their passages don't make:
-- "nickel-free" to a customer with a severe allergy, when the cited passage says "meets EU nickel limits"
-- "all sets come in one size", when LUNAR rings come in four
+- "nickel-free" to a customer with a severe allergy, citing the materials guide, which only says "meets the EU Nickel Directive limits". The SOLAR product pages do say "nickel-free", so this is also a real inconsistency in the brand's own copy, and for a severe allergy the cautious wording should win
+- "all sets come in one size", when LUNAR rings come in four (either over-generalised from the SOLAR page or repeating the FAQ's outdated "all pieces come in one size")
 - "not for continuous exposure to water", in a sentence with no source
 - "we do not have a phone number", inferred from "online-only"
 
 The quote check can't catch these: each quote was real, but the sentence around it said more. The other failures were answers that didn't address the question ("which collection would be best?" got three descriptions), put conflicting sources side by side without reconciling them (the FAQ's "waterproof" before the care guide's "take it off"), or left out something a customer needs (import duties when posting abroad).
 
-Two disagreements came from my own reference answers rather than the judge: the New York shipping reference didn't mention import duties either, so the judge was right by its brief. Better references would sharpen the judge too.
+One disagreement came from my own reference answer rather than the judge: the New York shipping reference didn't mention import duties either, so the judge was right by its brief. Better references would sharpen the judge too.
 
 What this changes: the automated numbers are still useful for catching regressions, but they overstate quality. I'd quote 82% as the quality figure and 96% as the regression baseline, and the next piece of work is a stricter judge, not a better prompt.
 
@@ -143,8 +143,8 @@ The evals drove most of the design. Each row is a run, the failure it showed, an
 
 | Stage | Pass rate | What the evals (or using it) showed | What changed |
 |---|---|---|---|
-| First run, 32 cases | 17% | Inline citation markers missing in 25 of 26 answers, despite a rule | Answers became sentences that declare their sources; code adds the numbers |
-| Runs 2 to 5 | 90% to 97% | No knowledge of today's date (the LUNAR offer); partly answerable questions without a way to reach the studio; the FAQ's "waterproof" outranking the care guide's "take it off before swimming"; an eval bug ("40" not matching "40cm") | Today's date in every request; a code-added contact line; document types shown and the FAQ ranked below guides; the check fixed |
+| First run, 30 cases | 17% | Inline citation markers missing in 25 of 26 answers, despite a rule | Answers became sentences that declare their sources; code adds the numbers |
+| Runs 2 to 5 (32 cases by the end) | 90% to 97% | No knowledge of today's date (the LUNAR offer); partly answerable questions without a way to reach the studio; the FAQ's "waterproof" outranking the care guide's "take it off before swimming"; an eval bug ("40" not matching "40cm") | Today's date in every request; a code-added contact line; document types shown and the FAQ ranked below guides; the check fixed |
 | Testing by hand, then 43 and 67 cases | | Answers that gave a rule without its conditions (earrings, returns, pearls); a broad returns question cut off at the token limit and shown as unverified; suggestions repeating the answer; wrong product facts in the content | Rules carry their conditions; a higher limit and a separate "too long" decline; follow-ups moved to a separate call; content corrected; every finding added as an eval case |
 | 67 cases, before fixes | 87% | Returns answers still missing conditions (the policy was split into four chunks); a follow-up rewrite that lost the topic; and five failures that were the eval's own fault (a plural not matching, a judge marking down an answer for refusing an injection, three checks stricter than the brand would be) | Short policies kept whole; the rewrite carries the topic; the eval fixes kept in a separate commit, with each one explained |
 | 3 repeat runs | 94% (91 to 97) | A regression: "can I return just the earrings from the set?" declined in every run. The Langfuse trace showed a quote blending two near-duplicate documents | Mostly verbatim quotes trimmed to the source's own words |
@@ -162,7 +162,7 @@ These are measured, not fixed, because the system is frozen:
 3. **Answers that stop at one piece.** "What are the pearls like?" gave the earrings' pearl size only, when each piece differs. *Next:* for questions about a collection, retrieve its collection page and all its product pages together.
 4. **Borderline answers vary between runs** (the flaky cases). *Next:* the checks in 1 and 2 remove the main sources of it; report every change as a mean over repeat runs, as here.
 5. **The judge is lenient** (see Judge calibration). *Next:* judge claim by claim against the passages, with a different and stronger model, and the conversation history; then re-measure agreement against the same labels.
-6. **Sentences that go slightly beyond their quote:** "nickel-free", "all sets are one size", "not for continuous exposure to water". Every quote is verified, but the sentence around it isn't. *Next:* an entailment check per sentence (does the cited passage support this sentence?) by a small second model, dropping or rewording sentences that fail.
+6. **Sentences that go beyond or misapply their source:** "all sets are one size", "not for continuous exposure to water", and "nickel-free" cited to a passage that doesn't say it (the product pages do, which is a content inconsistency to resolve). Every quote is verified, but the sentence around it isn't. *Next:* an entailment check per sentence (does the cited passage support this sentence?) by a small second model, dropping or rewording sentences that fail.
 7. **Answers that don't address the actual question** ("which collection would be best?" got three descriptions). *Next:* add "does it answer the question asked?" to the judge's rubric, and a follow-up question back to the customer when a choice depends on their taste.
 8. **A false positive in my own safety net.** The rule that adds the email line to "we don't list" answers also matched "duties are not included in our prices". *Next:* match only phrasings about missing information.
 9. **Graders without the conversation.** The labelling page didn't show earlier turns, so I labelled the six follow-up cases with the history to hand. Results now store the history and the page shows it, for future runs. The judge still isn't given it. The reference answers carry the context, so the effect is small. *Next:* pass the history to the judge.
