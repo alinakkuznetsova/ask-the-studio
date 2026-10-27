@@ -99,6 +99,40 @@ export class Retriever {
 
     return { results, bestSimilarity, archived };
   }
+
+  // searches with several phrasings of one question and fuses the results.
+  // used for follow-ups: the rewritten question finds what "and the LUNAR
+  // one?" refers to, while the customer's own words protect against a
+  // rewrite that drifts towards the previous topic. one model call should
+  // not be a single point of failure for what gets retrieved.
+  async searchAll(queries: string[]): Promise<RetrievalResult> {
+    const unique = [...new Set(queries.map((q) => q.trim()).filter(Boolean))];
+    if (unique.length <= 1) return this.search(unique[0] ?? "");
+    const runs = await Promise.all(unique.map((q) => this.search(q)));
+    return mergeResults(runs, this.config.topK, this.config.rrfK, this.config.archivedPerAnswer);
+  }
+}
+
+// fuses several result lists by rank (rrf again), keeping each chunk's best
+// similarity, the best relevance across queries, and the archived passages
+// attached to any of them
+export function mergeResults(runs: RetrievalResult[], topK: number, rrfK: number, archivedLimit: number): RetrievalResult {
+  const byId = new Map<string, ScoredChunk>();
+  for (const run of runs) {
+    for (const r of run.results) {
+      const seen = byId.get(r.chunk.id);
+      if (!seen || (r.vectorScore ?? 0) > (seen.vectorScore ?? 0)) byId.set(r.chunk.id, r);
+    }
+  }
+  const fused = rrf(runs.map((run) => run.results.map((r) => r.chunk.id)), rrfK);
+  const results = [...fused.entries()].slice(0, topK).map(([id, score]) => ({ ...byId.get(id)!, score }));
+  const archived: Chunk[] = [];
+  for (const run of runs) for (const c of run.archived) if (!archived.some((a) => a.id === c.id)) archived.push(c);
+  return {
+    results,
+    bestSimilarity: Math.max(...runs.map((run) => run.bestSimilarity)),
+    archived: archived.slice(0, archivedLimit),
+  };
 }
 
 // true when `current` comes from the doc that superseded `old`'s doc

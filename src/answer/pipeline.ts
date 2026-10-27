@@ -153,8 +153,12 @@ async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions):
 
   // 2. retrieve
   const tRetrieve = performance.now();
-  const rs = step("retrieve", "retriever", { query: searchQuery });
-  const { results, bestSimilarity, archived } = await deps.retriever.search(searchQuery);
+  // a follow-up is searched with both the rewrite and the customer's own
+  // words, so a rewrite that drifts to the previous topic can't hide the
+  // passages the customer actually asked about
+  const queries = rewritten && rewritten !== q ? [rewritten, q] : [searchQuery];
+  const rs = step("retrieve", "retriever", { queries });
+  const { results, bestSimilarity, archived } = await deps.retriever.searchAll(queries);
   rs.end(
     {
       current: results.map((r) => ({ chunk: r.chunk.id, fused: r.score, similarity: r.vectorScore, bm25: r.bm25Score })),

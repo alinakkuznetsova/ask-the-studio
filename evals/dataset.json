@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-26.13",
+  "version": "2026-10-26.14",
   "asOf": "2026-10-26",
   "notes": "s9, m8 and c9 are the example questions from the brief. asOf fixes today's date for every case, so time-limited offers give stable expectations. requiredDocs is a list of groups; a group passes if any doc in it is retrieved. mustInclude items are case-insensitive and may list alternatives with |. expect: answer, decline, or partial_or_decline (a decline, or an answer that points to the support email). The realistic group (p) rephrases questions the way customers write them: typos, indirect, casual. The conversation group (t) asks follow-ups that only make sense with the earlier turns.",
   "cases": [
@@ -769,6 +769,21 @@
       "mustInclude": [],
       "mustNotInclude": ["specific sizes for rings"],
       "reference": "We don't list exchanges. A set can be returned complete, all five pieces unworn in original packaging, within 30 days. Points to hello@parurelondon.com."
+    },
+    {
+      "id": "t5-topic-switch-shower",
+      "category": "conversation",
+      "question": "can i wear the rings in the shower",
+      "history": [
+        { "role": "user", "content": "Are the earrings hypoallergenic?" },
+        { "role": "assistant", "content": "Yes. Our earrings are 316L stainless steel, which is hypoallergenic and meets the EU Nickel Directive limits." }
+      ],
+      "expect": "answer",
+      "requiredDocs": [["jewellery-care"]],
+      "acceptableDocs": ["faq", "pearl-care", "materials", "marine-collection", "solar-ring", "marine-tide-ring", "lunar-star-ring"],
+      "mustInclude": ["shower"],
+      "mustNotInclude": [],
+      "reference": "We recommend taking your jewellery off before showering. (A complete new question after an unrelated earlier topic: the answer must be about showering, not the earlier topic.)"
     }
   ]
 }
