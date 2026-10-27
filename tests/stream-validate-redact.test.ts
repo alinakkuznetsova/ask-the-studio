@@ -64,6 +64,22 @@ describe("validateCitations", () => {
     expect(r.valid).toHaveLength(0);
     expect(r.dropped).toBe(2);
   });
+  it("trims a mostly verbatim quote to the source's own words", () => {
+    const policy = new Map([
+      ["S2", "Sets are sold at a discount, so a set can only be returned as a complete set: all five pieces, unworn and in their original packaging, within 30 days of delivery."],
+    ]);
+    // the opening is borrowed from another document; the rest is verbatim
+    const r = validateCitations(
+      [{ source: "S2", quote: "Because sets are discounted, a set can only be returned as a complete set: all five pieces, unworn and in their original packaging, within 30 days of delivery." }],
+      policy,
+    );
+    expect(r.trimmed).toBe(1);
+    expect(r.valid[0]!.quotes[0]).toBe("a set can only be returned as a complete set: all five pieces, unworn and in their original packaging, within 30 days of delivery");
+  });
+  it("still rejects a quote with only a short verbatim run", () => {
+    const r = validateCitations([{ source: "S1", quote: "Refunds are issued to your bank within ten days after we inspect the item carefully." }], src);
+    expect(r.valid).toHaveLength(0);
+  });
 });
 
 describe("leaksPrompt", () => {

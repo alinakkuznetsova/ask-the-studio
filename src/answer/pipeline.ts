@@ -260,8 +260,8 @@ async function askSteps(question: string, deps: PipelineDeps, opts: AskOptions):
 
   const sourceText = new Map([...labels].map(([label, v]) => [label, v.chunk.text]));
   const vt = step("verify citations", "guardrail", { citations: parsed.citations });
-  const { valid, dropped, checked } = validateCitations(parsed.citations, sourceText);
-  vt.end({ verified: valid, dropped }, { checked });
+  const { valid, dropped, checked, trimmed } = validateCitations(parsed.citations, sourceText);
+  vt.end({ verified: valid, dropped, trimmed }, { checked });
   // an answer must be backed by at least one verified quote from a current source
   if (!valid.some((v) => !labels.get(v.source)!.archived)) return decline("unverified", generateMs, { dropped, checked });
 
