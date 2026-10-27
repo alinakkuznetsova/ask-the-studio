@@ -48,23 +48,18 @@ describe("retriever", () => {
   });
 });
 
-describe("mergeResults", () => {
+describe("addExtras", () => {
   const chunk = (id: string) => ({ id, docId: id.split("#")[0]! }) as unknown as import("../src/types.js").Chunk;
-  const hit = (id: string, sim: number) => ({ chunk: chunk(id), score: 0, vectorScore: sim, bm25Score: null });
-  it("fuses result lists by rank and keeps the best similarity", async () => {
-    const { mergeResults } = await import("../src/retrieval/retriever.js");
-    const merged = mergeResults(
-      [
-        { results: [hit("a#1", 0.5), hit("b#1", 0.4)], bestSimilarity: 0.5, archived: [] },
-        { results: [hit("c#1", 0.7), hit("a#1", 0.6)], bestSimilarity: 0.7, archived: [chunk("old#1")] },
-      ],
-      6,
-      60,
+  const hit = (id: string) => ({ chunk: chunk(id), score: 0, vectorScore: 0.5, bm25Score: null });
+  it("keeps the rewrite's results whole and adds the best new ones from the customer's words", async () => {
+    const { addExtras } = await import("../src/retrieval/retriever.js");
+    const merged = addExtras(
+      { results: [hit("a#1"), hit("b#1")], bestSimilarity: 0.5, archived: [] },
+      { results: [hit("b#1"), hit("c#1"), hit("d#1"), hit("e#1")], bestSimilarity: 0.7, archived: [chunk("old#1")] },
+      2,
       2,
     );
-    expect(merged.results.map((r) => r.chunk.id)[0]).toBe("a#1"); // ranked in both lists
-    expect(merged.results.map((r) => r.chunk.id)).toEqual(expect.arrayContaining(["a#1", "b#1", "c#1"]));
-    expect(merged.results.find((r) => r.chunk.id === "a#1")!.vectorScore).toBe(0.6);
+    expect(merged.results.map((r) => r.chunk.id)).toEqual(["a#1", "b#1", "c#1", "d#1"]);
     expect(merged.bestSimilarity).toBe(0.7);
     expect(merged.archived.map((c) => c.id)).toEqual(["old#1"]);
   });

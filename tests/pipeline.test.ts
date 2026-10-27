@@ -205,7 +205,7 @@ describe("ask pipeline", () => {
     expect(deltas.join("")).not.toMatch(/4111/);
   });
 
-  it("searches a follow-up with the customer's own words too, so a drifting rewrite can't hide the right passages", async () => {
+  it("adds the best passages for the customer's own words to a follow-up, so a drifting rewrite can't hide them", async () => {
     // the rewrite drifts to the earlier topic; the original question still finds the care guide
     const chat = new FakeChat(() => declined("not_in_sources"), "Are the earrings hypoallergenic and nickel free?");
     const history = [
@@ -217,9 +217,10 @@ describe("ask pipeline", () => {
     expect(r.meta.rewrittenQuestion).toBe("Are the earrings hypoallergenic and nickel free?");
     // the best passages for the customer's own words and for the rewrite both make it in
     const ownTop = (await retriever.search(question)).results.slice(0, 2).map((x) => x.chunk.id);
-    const rewriteTop = (await retriever.search("Are the earrings hypoallergenic and nickel free?")).results.slice(0, 2).map((x) => x.chunk.id);
+    const rewriteAll = (await retriever.search("Are the earrings hypoallergenic and nickel free?")).results.map((x) => x.chunk.id);
     const got = r.meta.retrieved.map((x) => x.chunkId);
-    for (const id of [...ownTop, ...rewriteTop]) expect(got).toContain(id);
+    // everything the rewrite found is kept, and the best of the customer's own words is added
+    for (const id of [...rewriteAll, ...ownTop]) expect(got).toContain(id);
   });
 
   it("tells the model today's date so time-limited offers can be applied", async () => {
