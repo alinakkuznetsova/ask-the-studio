@@ -1,6 +1,6 @@
 # Ask the Studio
 
-A customer assistant for [Parure London](https://parurelondon.com), my jewellery brand. It answers only from the brand's own guides and policies, cites the passage behind every claim, and says so when the answer isn't there.
+A customer assistant for [Parure London](https://parurelondon.com), my jewellery brand. It answers only from the brand's own guides and policies, cites the passages its answer comes from, and says so when the answer isn't there.
 
 **Live demo:** TBD_URL. Turn on **Staff view** (top right) for sources, how each answer was made, and the eval dashboard.
 
