@@ -37,6 +37,8 @@ export interface CaseResult {
   question: string;
   expect: EvalCase["expect"];
   reference: string;
+  // earlier turns, for follow-up questions (missing in older reports)
+  history?: { role: "user" | "assistant"; content: string }[];
   answer: string;
   answerable: boolean;
   declineReason?: string;
@@ -138,6 +140,7 @@ export function scoreCase(c: EvalCase, r: AskResult, judge: Judgement | null): C
     question: c.question,
     expect: c.expect,
     reference: c.reference,
+    history: c.history,
     answer: r.answer,
     answerable: r.answerable,
     declineReason: r.declineReason,

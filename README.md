@@ -162,14 +162,14 @@ Embeddings are cached by `sha256(model + chunk text)`. Editing one document re-e
 
 ## Evaluation
 
-`evals/dataset.json` holds 30 questions in five groups:
+`evals/dataset.json` holds 32 questions in five groups:
 
 | Group | Cases | What it tests |
 |---|---|---|
-| Straightforward | 7 | Single-document facts, including a safety case (severe nickel allergy) |
+| Straightforward | 8 | Single-document facts, including a safety case (severe nickel allergy) and a product measurement |
 | Needs several documents | 7 | Set saving maths, set returns exception, gift wrap plus EU delivery, warranty, a follow-up turn |
-| Conflicting or outdated | 7 | 2025 vs 2026 policies, FAQ vs care guide, the LUNAR express offer |
-| Not in the sources | 5 | Necklace length, engraving, phone number, next collection, student discount |
+| Conflicting or outdated | 8 | 2025 vs 2026 policies, FAQ vs care guide (asked two ways), the LUNAR express offer |
+| Not in the sources | 5 | Bangle diameter, engraving, phone number, next collection, student discount |
 | Off-topic and manipulation | 4 | Coding request, prompt extraction, competitor comparison, role-play injection with a false claim |
 
 Each case lists the documents retrieval must find, the documents it may cite, facts that must appear, claims that must not appear, and a reference answer.
@@ -191,52 +191,55 @@ Every report records the prompt version, judge rubric version, models, dataset v
 
 ### Results
 
-Latest run: 30 cases, `gpt-4.1-mini` for answers and judging, prompt `2026-10-26.6`, judge rubric `2026-10-26.2`, as of 26 October 2026. The baseline is vector-only retrieval with old policy versions in the index and no contextual headers; the full system adds BM25 fusion, version filtering and contextual headers. Both use the same prompt, model and judge, so the difference is retrieval design alone.
+Final run: 32 cases, `gpt-4.1-mini` for answers and judging, prompt `2026-10-26.7`, judge rubric `2026-10-26.2`, dataset `2026-10-26.5`, as of 26 October 2026. The baseline is vector-only retrieval with old policy versions in the index and no contextual headers; the full system adds BM25 fusion, version filtering and contextual headers. Both use the same prompt, model and judge, so the difference is retrieval design alone.
 
 | Metric | Baseline | Full system |
 |---|---|---|
-| Cases passed | 87% (26/30) | **93% (28/30)** |
-| Retrieval recall@6 | 98% | **100%** |
-| Decline accuracy | 87% | **93%** |
+| Cases passed | 91% (29/32) | **97% (31/32)** |
+| Retrieval recall@6 | 94% | **100%** |
+| Decline accuracy | 94% | **97%** |
 | Key facts (must and must-not) | 97% | **100%** |
-| Correctness (judge, 1 to 5) | 4.73 | **4.88** |
+| Correctness (judge, 1 to 5) | 4.75 | **4.89** |
 | Groundedness (judge) | 100% | 100% |
-| Focus (judge) | 96% | **100%** |
-| Quotes verified verbatim | 93% | **99%** |
+| Focus (judge) | 100% | 100% |
+| Quotes verified verbatim | 97% | **100%** |
 | Sentences backed by a verified source | 100% | 100% |
-| Citation precision | 96% | **97%** |
+| Citation precision | 94% | **99%** |
 | Answered when it should have declined | 0 | 0 |
-| Declined when it could have answered | 1 | **0** |
-| Latency p50 / p95 | 2.0s / 3.2s | 1.9s / 3.3s |
+| Latency p50 / p95 | 2.0s / 2.8s | 1.7s / 2.6s |
 | Cost per answer | $0.0011 | $0.0011 |
 
 | Question type | Cases | Baseline | Full system |
 |---|---|---|---|
-| Straightforward | 7 | 100% | 100% |
+| Straightforward | 8 | 88% | **100%** |
 | Needs several documents | 7 | 100% | 100% |
-| Conflicting or outdated | 7 | 86% | **100%** |
-| Not in the sources | 5 | 40% | **60%** |
+| Conflicting or outdated | 8 | 100% | 100% |
+| Not in the sources | 5 | 60% | **80%** |
 | Off-topic and manipulation | 4 | 100% | 100% |
 
 The full report, case by case, is in `evals/reports/latest.md` and on the dashboard at `/#/evals`.
 
 ### Findings
 
-**The evals changed the system more than the initial design did.** The full system went from 17% to 93% in three iterations, each driven by a specific failure:
+**The evals changed the system more than the initial design did.** The full system went from 17% to 97% over five runs, each change driven by a specific failure:
 
-| Run | Pass rate | What the eval showed | What changed |
+| Run | Pass rate | What the eval (or manual testing) showed | What changed |
 |---|---|---|---|
 | 1 | 17% | The model omitted inline citation markers in 25 of 26 answers, despite a rule saying "an answer with no ids is invalid" | Answers became a list of sentences, each declaring its sources; the code adds the numbers. An instruction failed where a structure succeeded. |
 | 2 | 90% | The LUNAR offer was left out because the model did not know today's date. Partly answerable questions ignored the rule to give the support email. One answer repeated a false claim ("measurements are listed on each product page") that came from the knowledge base itself. The judge gave 5/5 to an answer padded with unrelated offers. | Today's date in every request; a `partial` flag with the contact line added by code; the size guide corrected; the judge rubric gained a focus score and a version number. |
-| 3 | 93% | Two "is there X?" questions (engraving, student discount) answered honestly but without the contact line | Recorded as known issues rather than tuned away (see below). |
+| 3 | 93% | Remaining failures were "is there X?" questions answered without the contact line. Manual testing then found "Can I go swimming in my jewellery?" led with the FAQ's "highly waterproof", ignoring the care guide's "remove before swimming", although the care guide was the top retrieved passage. | Sources now show their document type and the FAQ is ranked below guides; the short swimming question joined the eval set. The real necklace length was added to its product page, with a new case for it. |
+| 4 | 94% | The new necklace case failed although the judge gave the answer 5/5: the eval's whole-word match did not find "40" inside "40cm". A bug in the eval, not the system. | The case accepts "40cm", "40 cm" or "40 centimetres". |
+| 5 | 97% | One known issue left (below). | Stopped tuning. |
 
-**Version filtering prevents the costly error, not the common one.** The baseline answered most conflict questions correctly on its own: the model can often tell which policy is newer from the dates. But in every run it made at least one stale answer the full system never made: telling a customer free delivery starts at £75 (the 2025 threshold), and twice declining to confirm US shipping because the 2025 policy said "UK and Europe only". For a support assistant, a confident wrong policy is worse than a decline, so this is enforced in code rather than left to the model.
+**Version filtering makes the right answer reliable, not just likely.** The baseline, which sees old and new policies side by side, usually works out which is current from the dates. But in 4 of its 5 runs it gave at least one stale answer the full system never gave: telling a customer free delivery starts at £75 (the 2025 threshold), or declining to confirm US shipping because the 2025 policy said "UK and Europe only". The same prompt at temperature 0 got these right in one run and wrong in the next. For a support assistant, a confident wrong policy is worse than a decline, so this is enforced in code rather than left to the model.
 
-**Grounding holds.** Across all runs, the system never answered a question it should have declined, every answer sentence in the final run was backed by a verified source, and 99% of quotes matched their source verbatim (the rest were dropped before reaching the user).
+**Hybrid search finds what embeddings blur.** In the final run, vector search alone never surfaced the SOLAR necklace product page for the length question (0% recall), so the baseline could not answer it, and for the LUNAR express question it found only one of the two documents needed. The full system found every required document in every case: BM25 matches exact names like "SOLAR necklace", and the "SOLAR Necklace > Size" header ties a bare measurement to its product.
 
-**Known issues.** Questions about something the knowledge base does not mention ("can you engrave my bangle?", "is there a student discount?") are answered honestly ("there is no mention of engraving") but sometimes in system-like wording, without flagging the answer as partial, so the contact line is missing. A general rule (treat "do you offer X?" with no matching source as partial) would likely fix both. I stopped here deliberately: two documented failures in a 30-case set are more useful than a prompt tuned until this particular set passes.
+**Grounding holds.** Across all runs the system never answered a question it should have declined. In the final run every answer sentence was backed by a verified source and every quote matched its source verbatim; in earlier runs the few quotes that did not were dropped before reaching the user.
 
-**Cost and speed.** About $0.001 per answer (under 0.1p) and a median of 1.9 seconds end to end. Searching 38 chunks in memory is near instant; most of the time is the embedding call for the question and the model writing the answer, and the streamed UI shows the first words well before the answer completes.
+**Known issue.** Asked "Can you engrave my initials on the LUNAR eclipse bangle?", the system answers honestly ("there is no mention of engraving") but in system-like wording and without flagging the answer as partial, so the contact line is missing. A general rule (treat "do you offer X?" with no matching source as partial) would likely fix it. I stopped here deliberately: one documented failure in a 32-case set is more useful than a prompt tuned until this particular set passes.
+
+**Cost and speed.** About $0.001 per answer (under 0.1p) and a median of 1.7 seconds end to end. Searching 38 chunks in memory is near instant; most of the time is the embedding call for the question and the model writing the answer, and the streamed UI shows the first words well before the answer completes.
 
 ### CI
 
@@ -286,7 +289,7 @@ Not done here, and needed for a real launch: authentication for any staff or ord
 
 ## Next steps
 
-1. Fix the known issue above: treat questions about things with no matching source as partly answered, and add more "do you offer X?" cases to the eval set first.
+1. Fix the known issue above: add more "do you offer X?" cases to the eval set first, then treat questions about things with no matching source as partly answered.
 2. A re-ranker (a cross-encoder or a cheap LLM pass) over the top 20 before taking 6, for the multi-document cases.
 3. Order-aware answers ("where is my order?") behind authentication, through a read-only order lookup tool.
 4. Effective-date reasoning for customers who bought under an older policy (an order delivered in 2025 is covered by the 2025 returns policy).

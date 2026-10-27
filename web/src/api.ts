@@ -147,6 +147,7 @@ export interface EvalCaseResult {
   expect: string;
   // older reports were saved before these two fields existed
   reference?: string;
+  history?: { role: "user" | "assistant"; content: string }[];
   cited?: { title: string; text: string }[];
   answer: string;
   answerable: boolean;

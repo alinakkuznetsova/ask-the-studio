@@ -131,6 +131,16 @@ export function LabelPage() {
         <p className="label-meta">
           {r.id} · {r.category.replace("_", " ")}
         </p>
+        {r.history?.length ? (
+          <div className="label-history">
+            <h2>Earlier in the conversation</h2>
+            {r.history.map((t, n) => (
+              <p key={n}>
+                <span>{t.role === "user" ? "Customer" : "Studio"}:</span> {t.content}
+              </p>
+            ))}
+          </div>
+        ) : null}
         <div className="q-row">
           <p className="q">{r.question}</p>
         </div>
