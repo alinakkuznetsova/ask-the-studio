@@ -2,7 +2,7 @@
 
 A customer assistant for [Parure London](https://parurelondon.com), my jewellery brand. It answers only from the brand's own guides and policies, cites the passages its answer comes from, and says so when the answer isn't there.
 
-**Live demo:** TBD_URL. Turn on **Staff view** (top right) for sources, how each answer was made, and the eval dashboard.
+**Live demo:** https://ask-the-studio.onrender.com. Turn on **Staff view** (top right) for sources, how each answer was made, and the eval dashboard.
 
 ## Results
 
