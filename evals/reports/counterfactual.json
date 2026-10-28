@@ -1,0 +1,100 @@
+{
+  "runAt": "2026-10-26T21:12:58.935Z",
+  "version": "2026-10-26.1",
+  "promptVersion": "2026-10-26.8",
+  "model": "gpt-4.1-mini",
+  "passed": 6,
+  "total": 6,
+  "rows": [
+    {
+      "id": "cf1-return-window",
+      "question": "How long do I have to return something?",
+      "original": {
+        "answer": "You can return unworn items in their original packaging within 30 days of delivery.[1]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "You can return unworn items in their original packaging within 45 days of delivery.[1]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    },
+    {
+      "id": "cf2-marine-set-price",
+      "question": "How much is the MARINE set?",
+      "original": {
+        "answer": "The MARINE set costs £235.[1] It includes all five pieces from the MARINE collection.[1] Buying the set saves £37 compared with buying the pieces separately.[1]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "The MARINE set costs £249.[1] It includes all five pieces from the MARINE collection.[1] Buying the set saves £23 compared with buying the pieces separately.[1]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    },
+    {
+      "id": "cf3-warranty-length",
+      "question": "How long is the warranty on your jewellery?",
+      "original": {
+        "answer": "Our jewellery comes with a 12-month warranty against manufacturing faults.[1]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "Our jewellery comes with a 24-month warranty against manufacturing faults.[1]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    },
+    {
+      "id": "cf4-free-delivery",
+      "question": "When is UK delivery free?",
+      "original": {
+        "answer": "UK delivery is free on orders over £100.[1][2] There is free UK express delivery on all LUNAR orders until 30 November 2026.[2]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "UK delivery is free on standard shipping for orders over £150.[1][2] There is also free UK express delivery on all LUNAR collection orders until 30 November 2026.[2]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    },
+    {
+      "id": "cf5-reply-time",
+      "question": "How quickly do you reply to emails?",
+      "original": {
+        "answer": "We reply to emails within two working days, Monday to Friday.[1]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "We reply to emails within three working days, Monday to Friday.[1]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    },
+    {
+      "id": "cf6-europe-price-removed",
+      "question": "How much is delivery to Europe?",
+      "original": {
+        "answer": "Delivery to Europe costs £9.95 and takes 4 to 7 working days.[1]",
+        "failures": []
+      },
+      "edited": {
+        "answer": "We do not list delivery prices to Europe in our current shipping policy.[1]",
+        "answerable": true,
+        "failures": [],
+        "citesEditedText": true
+      },
+      "pass": true
+    }
+  ]
+}

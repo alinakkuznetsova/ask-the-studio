@@ -1,0 +1,604 @@
+{
+  "runAt": "2026-10-27T11:28:27.982Z",
+  "variant": "full",
+  "datasetVersion": "2026-10-26.1",
+  "asOf": "2026-10-26",
+  "promptVersion": "2026-10-26.13",
+  "models": {
+    "chat": "gpt-4.1-mini",
+    "embedding": "text-embedding-3-small",
+    "judge": "gpt-4.1-mini"
+  },
+  "judgeVersion": "2026-10-26.5",
+  "retrieval": {
+    "mode": "hybrid",
+    "filterArchived": true,
+    "contextualHeaders": true,
+    "topK": 6,
+    "candidates": 20,
+    "rrfK": 60,
+    "archivedPerAnswer": 2
+  },
+  "summary": {
+    "cases": 10,
+    "passRate": 0.8,
+    "retrievalRecall": 1,
+    "declineAccuracy": 1,
+    "falseDeclines": 0,
+    "falseAnswers": 0,
+    "factAccuracy": 0.8,
+    "correctness": 4.375,
+    "groundedness": 1,
+    "focus": 0.875,
+    "quoteVerification": 1,
+    "sentenceCoverage": 1,
+    "citationPrecision": 1,
+    "followUpAnswerRate": 1,
+    "followUpFreshness": 1,
+    "latencyP50": 2964,
+    "latencyP95": 3700,
+    "costPerAnswerUsd": 0.0019521600000000003,
+    "byCategory": {
+      "realistic": {
+        "cases": 7,
+        "passRate": 0.7142857142857143
+      },
+      "unanswerable": {
+        "cases": 2,
+        "passRate": 1
+      },
+      "multi_doc": {
+        "cases": 1,
+        "passRate": 1
+      }
+    }
+  },
+  "repeat": null,
+  "judgeCostUsd": 0.004108800000000001,
+  "previous": null,
+  "results": [
+    {
+      "id": "h1-sensitive-skin-earrings",
+      "category": "realistic",
+      "question": "I have really sensitive skin so often earrinsg irritate me. Are your earrinsg irritation free?",
+      "expect": "answer",
+      "reference": "Our pieces are 316L stainless steel, which is hypoallergenic and meets EU nickel limits, so most people with sensitive skin wear them without irritation. With a severe, diagnosed nickel allergy, email hello@parurelondon.com before ordering.",
+      "answer": "Our earrings are made from 316L stainless steel, which is hypoallergenic and meets EU Nickel Directive limits, so most people with sensitive skin can wear them without irritation.[1][2] The SOLAR earrings are gold-plated using PVD, which is designed to be nickel-free and suitable for everyday wear.[2] If you have a severe, diagnosed nickel allergy, we recommend contacting us before ordering so we can advise you.[1]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 5,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer fully covers the hypoallergenic nature of the earrings, mentions the material and nickel limits, and advises contacting for severe allergies, all supported by the sources."
+      },
+      "pass": true,
+      "latencyMs": 3700,
+      "costUsd": 0.0023828,
+      "tokens": {
+        "input": 4777,
+        "output": 295
+      },
+      "sources": [
+        "materials#all",
+        "solar-earrings#all"
+      ],
+      "retrieved": [
+        "materials#all",
+        "solar-earrings#all",
+        "warranty-and-repairs#all",
+        "jewellery-care#all",
+        "lunar-collection#all",
+        "solar-collection#all"
+      ],
+      "followUps": [
+        "Are SOLAR earrings suitable for everyday wear?",
+        "Can I return SOLAR earrings if they irritate my skin?",
+        "What care do SOLAR earrings need to avoid damage?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Materials and Skin Sensitivity > Materials and Skin Sensitivity",
+          "text": "## Our base metal\nEvery Parure piece starts with 316L stainless steel, often called surgical-grade steel. It's strong, doesn't rust, and contains over 60% recycled content.\n\n## Gold pieces (SOLAR and MARINE)\nOur gold pieces are coated using PVD (physical vapour deposition), which bonds a thin layer of gold-tone coating to the steel. PVD is much harder-wearing than traditional electroplating, so the colour lasts longer and is resistant to tarnishing.\n\n## Silver-tone pieces (LUNAR)\nLUNAR pieces are not plated. They're polished 316L stainless steel in its natural silver tone. Because there's no coating, the colour can't wear off. They are not sterling silver.\n\n## Stones and pearls\n- **SOLAR:** red agate, a natural stone.\n- **MARINE:** freshwater pearls and blue enamel.\n- **LUNAR:** star-cut cubic zirconia crystals.\n\n## Sensitive skin\n316L stainless steel is hypoallergenic and meets the EU Nickel Directive limits for jewellery, so most people with sensitive skin can wear our pieces without irritation. If you have a severe, diagnosed nickel allergy, please email hello@parurelondon.com before ordering and we'll talk you through it."
+        },
+        {
+          "title": "SOLAR Earrings > SOLAR Earrings",
+          "text": "**Price:** £50\n\n## Description\nSun-shaped studs with radiating gold rays around a red agate centre.\n\n## Materials\nEach piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.\n\n## Details\n- Diameter: 14mm\n- Sold as a pair\n\n## Please note\nEarrings are non-returnable for hygiene reasons, unless faulty or returned as part of a complete set."
+        }
+      ]
+    },
+    {
+      "id": "h2-gift-discount-haggle",
+      "category": "realistic",
+      "question": "Im trynna buy a nice gift for my girfriends birthday, any chnace i can get a discount?",
+      "expect": "partial_or_decline",
+      "reference": "We don't list discount codes. Sets are sold at a discount (for example the SOLAR set is £225 instead of £250), and gift wrapping is available for £4. Points to hello@parurelondon.com.",
+      "answer": "We don't list general discount codes or offers for gifts.[1][2][3] The LUNAR set is discounted to £195, saving £36 compared with buying the pieces separately.[1] The SOLAR set is discounted to £225, saving £25 compared with buying the pieces separately.[2] The MARINE set is discounted to £235, saving £37 compared with buying the pieces separately.[3]\n\nFor anything else, email hello@parurelondon.com and the studio will help.",
+      "answerable": true,
+      "retrievalRecall": null,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 5,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer correctly states there are no general discount codes but highlights discounted sets with accurate prices and savings, all supported by the sources."
+      },
+      "pass": true,
+      "latencyMs": 3368,
+      "costUsd": 0.0024456000000000005,
+      "tokens": {
+        "input": 5094,
+        "output": 255
+      },
+      "sources": [
+        "lunar-collection#all",
+        "solar-collection#all",
+        "marine-collection#all"
+      ],
+      "retrieved": [
+        "gifting#all",
+        "lunar-collection#all",
+        "solar-collection#all",
+        "shipping#all",
+        "marine-pearl-choker#all",
+        "marine-collection#all"
+      ],
+      "followUps": [
+        "Do you offer gift wrapping for birthday gifts?",
+        "Can I send a gift directly to my girlfriend?",
+        "Are gift cards available for Parure London?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "The LUNAR Collection > The LUNAR Collection",
+          "text": "Our first silver-tone collection, inspired by the night sky. LUNAR pieces are polished 316L stainless steel in its natural silver tone, set with star-cut cubic zirconia crystals. LUNAR is not plated, so the colour can't wear off.\n\nLike every Parure collection, LUNAR is a parure: five matching pieces designed to be worn together or apart.\n\n## Pieces and prices\n- **LUNAR star ring:** £40. A star-cut crystal on a slim band. Available in UK sizes J, L, N and P.\n- **LUNAR crescent earrings:** £45. Crescent moon studs with a crystal point.\n- **LUNAR constellation necklace:** £60. Fine chain with five scattered crystal stars, adjustable clasp.\n- **LUNAR star bracelet:** £38. Fine chain with a single star charm, adjustable clasp.\n- **LUNAR eclipse bangle:** £48. Slim polished bangle with two overlapping circles, one size.\n- **LUNAR set:** £195. All five pieces.\n\n## Launch offer\nFree UK express delivery on all LUNAR orders until 30 November 2026.\n\n## Buying the set\nThe LUNAR set includes all five pieces for £195, saving £36 compared with buying them separately (£231). Because sets are discounted, a set can only be returned complete, not piece by piece."
+        },
+        {
+          "title": "The SOLAR Collection > The SOLAR Collection",
+          "text": "Sculptural, gold-plated jewellery inspired by 17th-century parures. SOLAR pieces are built around rounded, dome-like settings detailed with red agate, a natural stone. Every piece is crafted using PVD gold plating over predominantly recycled stainless steel. They are hypoallergenic, nickel-free and designed for everyday wear.\n\nLike every Parure collection, SOLAR is a parure: five matching pieces designed to be worn together or apart.\n\n## Pieces and prices\n- **SOLAR bracelet:** £40. Fine chain with red agate stones, adjustable clasp.\n- **SOLAR bangle:** £50. Wide sculptural bangle, one size.\n- **SOLAR necklace:** £65. Rounded, dome-like settings with red agate, adjustable clasp.\n- **SOLAR earrings:** £50. Sun-shaped studs with a red agate centre.\n- **SOLAR ring:** £45. Sun-ray ring with a red agate centre, UK size O.\n- **SOLAR set:** £225. The full parure: all five pieces.\n\n## Sizing\nAll SOLAR pieces come in one size. The ring is UK size O.\n\n## Buying the set\nThe SOLAR set includes all five pieces for £225, saving £25 compared with buying them separately (£250). Because sets are discounted, a set can only be returned complete, not piece by piece."
+        },
+        {
+          "title": "The MARINE Collection > The MARINE Collection",
+          "text": "Inspired by the sea and the 17th-century fashion for pearls. MARINE pairs PVD gold-plated stainless steel with deep blue enamel and natural freshwater pearls. Because every pearl is natural, each one is slightly different in shape and lustre.\n\nLike every Parure collection, MARINE is a parure: five matching pieces designed to be worn together or apart.\n\n## Pieces and prices\n- **MARINE pearl drop earrings:** £55. Gold hoops with a single freshwater pearl drop.\n- **MARINE wave cuff:** £60. Sculpted wave cuff with a blue enamel line, one size.\n- **MARINE pearl choker:** £70. Freshwater pearls with gold spacer beads, adjustable clasp.\n- **MARINE tide ring:** £45. Gold band with a blue enamel wave, UK size O.\n- **MARINE pearl bracelet:** £42. Fine gold chain with three freshwater pearls, adjustable clasp.\n- **MARINE set:** £235. All five pieces.\n\n## Caring for MARINE\nThe gold steel can handle a splash, but the pearls can't. Keep MARINE pieces away from water, perfume and creams. See the Pearl Care guide.\n\n## Buying the set\nThe MARINE set includes all five pieces for £235, saving £37 compared with buying them separately (£272). Because sets are discounted, a set can only be returned complete, not piece by piece."
+        }
+      ]
+    },
+    {
+      "id": "h3-is-it-nice-vague",
+      "category": "realistic",
+      "question": "Is the jewellery nice?",
+      "expect": "partial_or_decline",
+      "reference": "Doesn't make an unsupported claim. Either briefly describes what the pieces are (316L stainless steel, PVD gold plating, three collections of five matching pieces) or asks what they'd like to know.",
+      "answer": "I can only help with questions about Parure London: our jewellery, orders, delivery, returns and care. Is there anything about Parure I can help with?",
+      "answerable": false,
+      "declineReason": "off_topic",
+      "retrievalRecall": null,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": null,
+      "quoteVerification": null,
+      "sentenceCoverage": null,
+      "judge": null,
+      "pass": true,
+      "latencyMs": 1299,
+      "costUsd": 0.0011236000000000002,
+      "tokens": {
+        "input": 2709,
+        "output": 25
+      },
+      "sources": [],
+      "retrieved": [
+        "jewellery-care#all",
+        "faq#is-your-jewellery-ethically-and-sustainably-sourced",
+        "solar-collection#all",
+        "materials#all",
+        "faq#does-your-jewellery-tarnish",
+        "about#how-our-pieces-are-made-our-collections"
+      ],
+      "followUps": [],
+      "followUpsAnswered": null,
+      "cited": []
+    },
+    {
+      "id": "h4-delivered-not-received",
+      "category": "unanswerable",
+      "question": "My package says delivered but I haven't received it",
+      "expect": "partial_or_decline",
+      "reference": "We don't list what to do when a tracked parcel shows delivered but hasn't arrived. Email hello@parurelondon.com with your order number. Must not promise a refund or replacement.",
+      "answer": "If your package says delivered but you haven't received it, please email us at hello@parurelondon.com for assistance.[1] We reply within two working days, Monday to Friday.[1]",
+      "answerable": true,
+      "retrievalRecall": null,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 4,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer correctly advises the customer to email the provided address for assistance, matching the reference, but adds the reply time which is supported by the source."
+      },
+      "pass": true,
+      "latencyMs": 2650,
+      "costUsd": 0.001924,
+      "tokens": {
+        "input": 4246,
+        "output": 141
+      },
+      "sources": [
+        "contact#all"
+      ],
+      "retrieved": [
+        "contact#all",
+        "gifting#all",
+        "returns-policy-2026#all",
+        "faq#what-is-your-return-policy",
+        "warranty-and-repairs#all",
+        "lunar-eclipse-bangle#all"
+      ],
+      "followUps": [
+        "Can you resend my order if it's lost?",
+        "How long does delivery usually take?",
+        "What should I do if my package is damaged?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Contact and Customer Care > Contact and Customer Care",
+          "text": "## How to reach us\nEmail hello@parurelondon.com. We reply within two working days, Monday to Friday.\n\nWe're an online-only brand, so we don't have a shop or showroom.\n\n## Order changes\nIf you need to change or cancel an order, email us as soon as possible. We can only change orders that haven't been dispatched yet.\n\n## Follow us\nInstagram: @parurelondon"
+        }
+      ]
+    },
+    {
+      "id": "h5-pearls-unique-ugly",
+      "category": "realistic",
+      "question": "I saw each pearl in the Marine collection is unique, are they all fairly similar though? what if i get an ugly one?",
+      "expect": "answer",
+      "reference": "Every pearl is natural, so each is slightly different in shape and lustre. If you don't like your piece, you can return it unworn in its original packaging within 30 days (earrings excepted, unless faulty or in a complete set).",
+      "answer": "Every pearl in the MARINE collection is natural, so each one is slightly different in shape and lustre.[1] Pearls are natural, so shape and colour vary slightly from pair to pair.[2]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": false,
+      "factFailures": [
+        "missing: 30 days"
+      ],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 3,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer correctly states pearls are natural and vary in shape and lustre but omits the important return policy details about returns within 30 days and exceptions for earrings."
+      },
+      "pass": false,
+      "latencyMs": 2964,
+      "costUsd": 0.0021392,
+      "tokens": {
+        "input": 4640,
+        "output": 177
+      },
+      "sources": [
+        "marine-collection#all",
+        "marine-pearl-drop-earrings#all"
+      ],
+      "retrieved": [
+        "marine-collection#all",
+        "pearl-care#all",
+        "marine-pearl-choker#all",
+        "marine-pearl-drop-earrings#all",
+        "materials#all",
+        "lunar-collection#all"
+      ],
+      "followUps": [
+        "Can I return the MARINE set if I'm unhappy with the pearls?",
+        "How should I store my MARINE pearls to keep them safe?",
+        "Are MARINE pearls hypoallergenic for sensitive skin?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "The MARINE Collection > The MARINE Collection",
+          "text": "Inspired by the sea and the 17th-century fashion for pearls. MARINE pairs PVD gold-plated stainless steel with deep blue enamel and natural freshwater pearls. Because every pearl is natural, each one is slightly different in shape and lustre.\n\nLike every Parure collection, MARINE is a parure: five matching pieces designed to be worn together or apart.\n\n## Pieces and prices\n- **MARINE pearl drop earrings:** £55. Gold hoops with a single freshwater pearl drop.\n- **MARINE wave cuff:** £60. Sculpted wave cuff with a blue enamel line, one size.\n- **MARINE pearl choker:** £70. Freshwater pearls with gold spacer beads, adjustable clasp.\n- **MARINE tide ring:** £45. Gold band with a blue enamel wave, UK size O.\n- **MARINE pearl bracelet:** £42. Fine gold chain with three freshwater pearls, adjustable clasp.\n- **MARINE set:** £235. All five pieces.\n\n## Caring for MARINE\nThe gold steel can handle a splash, but the pearls can't. Keep MARINE pieces away from water, perfume and creams. See the Pearl Care guide.\n\n## Buying the set\nThe MARINE set includes all five pieces for £235, saving £37 compared with buying them separately (£272). Because sets are discounted, a set can only be returned complete, not piece by piece."
+        },
+        {
+          "title": "MARINE Pearl Drop Earrings > MARINE Pearl Drop Earrings",
+          "text": "**Price:** £55\n\n## Description\nSmall gold hoops, each with a single freshwater pearl drop. Light enough for every day, statement enough for evenings.\n\n## Materials\nPVD gold plating over 316L stainless steel, with natural freshwater pearls (7 to 8mm). Hypoallergenic posts.\n\n## Details\n- Hoop diameter: 14mm\n- Total drop: 28mm\n- Sold as a pair\n\n## Please note\nEarrings are non-returnable for hygiene reasons, unless faulty or returned as part of a complete set. Pearls are natural, so shape and colour vary slightly from pair to pair. Keep pearls away from water (see Pearl Care)."
+        }
+      ]
+    },
+    {
+      "id": "h6-necklace-broke-two-months",
+      "category": "realistic",
+      "question": "My necklace broke after 2 months of wear",
+      "expect": "answer",
+      "reference": "It's covered by the 12-month warranty against manufacturing faults such as a broken clasp, unless it was damaged by an accident or misuse. Email hello@parurelondon.com with the order number and a photo; if approved, we repair or replace it free, including postage.",
+      "answer": "Your necklace comes with a 12-month warranty against manufacturing faults, including a broken clasp.[1] To make a claim, email hello@parurelondon.com with your order number and a photo of the issue.[1] If your claim is approved, we will repair or replace the necklace free of charge, including postage.[1]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 5,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer fully covers the warranty details and claim process exactly as in the reference and source."
+      },
+      "pass": true,
+      "latencyMs": 3423,
+      "costUsd": 0.0018504,
+      "tokens": {
+        "input": 3630,
+        "output": 249
+      },
+      "sources": [
+        "warranty-and-repairs#all"
+      ],
+      "retrieved": [
+        "warranty-and-repairs#all",
+        "solar-necklace#all",
+        "lunar-constellation-necklace#all",
+        "solar-bracelet#all",
+        "faq#does-your-jewellery-tarnish",
+        "lunar-collection#all"
+      ],
+      "followUps": [
+        "How do I send a claim for my broken necklace?",
+        "What details do I need to include in my claim email?",
+        "Can I get a replacement if my necklace breaks?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Warranty and Repairs > Warranty and Repairs",
+          "text": "## Our 12-month warranty\nEvery piece comes with a 12-month warranty against manufacturing faults, such as a broken clasp, a stone coming loose or the plating flaking under normal wear.\n\n## What isn't covered\n- Normal wear and tear, including scratches and gradual softening of the finish\n- Damage from accidents, bending or misuse\n- Damage to pearls from water, perfume or chemicals\n- Lost stones or pearls where the setting has been damaged\n\n## How to make a claim\nEmail hello@parurelondon.com with your order number and a photo of the issue. If your claim is approved, we'll repair or replace the piece free of charge, including postage.\n\n## Repairs outside warranty\nWe currently don't offer paid repairs outside the warranty period."
+        }
+      ]
+    },
+    {
+      "id": "h7-arrive-by-friday",
+      "category": "realistic",
+      "question": "If i buy now will it arrive by Friday?",
+      "expect": "answer",
+      "reference": "Orders placed before 1pm on a working day are dispatched the same day. UK standard delivery takes 2 to 3 working days and express (£6.95) arrives the next working day after dispatch, so a UK order placed now should arrive before Friday.",
+      "answer": "Orders placed before 1pm on a working day are dispatched the same day.[1] Standard UK delivery takes 2 to 3 working days and express delivery is next working day if dispatched that day.[1] Today is Monday 26 October 2026, so if you order before 1pm and choose express delivery, your order can arrive by Friday.[1]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 5,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer correctly states dispatch and delivery times with a relevant example date, fully supported by the source."
+      },
+      "pass": true,
+      "latencyMs": 3543,
+      "costUsd": 0.002418,
+      "tokens": {
+        "input": 4937,
+        "output": 277
+      },
+      "sources": [
+        "shipping#all"
+      ],
+      "retrieved": [
+        "lunar-collection#all",
+        "contact#all",
+        "shipping#all",
+        "gifting#all",
+        "faq#what-is-your-return-policy",
+        "returns-policy-2026#all"
+      ],
+      "followUps": [
+        "Is express delivery free for LUNAR collection orders?",
+        "Can I add gift wrapping to my order?",
+        "How do I track my order after dispatch?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Shipping and Delivery (2026) > Shipping and Delivery (2026)",
+          "text": "## Dispatch\nOrders placed before 1pm on a working day are dispatched the same day. Orders placed after 1pm, at weekends or on bank holidays are dispatched the next working day.\n\n## UK delivery\n- **Standard (Royal Mail Tracked 48):** £3.95, 2 to 3 working days. Free on orders over £100.\n- **Express (Royal Mail Tracked 24):** £6.95, next working day if dispatched that day.\n\n## International delivery\n- **Europe:** £9.95, 4 to 7 working days.\n- **USA and Canada:** £14.95, 5 to 10 working days.\n- **Rest of the world:** £19.95, 7 to 14 working days.\n\nInternational orders may be charged import duties and taxes by the destination country. These are paid by the customer and are not included in our prices.\n\n## Packaging\nEvery order arrives in our recyclable cardboard box with a cotton pouch. Gift wrapping is available at checkout (see Gifting).\n\n## Tracking\nYou'll receive a tracking link by email as soon as your order is dispatched."
+        }
+      ]
+    },
+    {
+      "id": "h8-most-popular-collection",
+      "category": "unanswerable",
+      "question": "Which is the most popular collection",
+      "expect": "partial_or_decline",
+      "reference": "We don't list which collection is most popular. May briefly describe the three collections. Must not name one as most popular.",
+      "answer": "I can't find that in Parure's information, so I'd rather not guess. Please email hello@parurelondon.com and the studio will reply within 2 working days.",
+      "answerable": false,
+      "declineReason": "not_in_sources",
+      "retrievalRecall": null,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": null,
+      "quoteVerification": null,
+      "sentenceCoverage": null,
+      "judge": null,
+      "pass": true,
+      "latencyMs": 1105,
+      "costUsd": 0.001196,
+      "tokens": {
+        "input": 2886,
+        "output": 26
+      },
+      "sources": [],
+      "retrieved": [
+        "lunar-collection#all",
+        "solar-collection#all",
+        "materials#all",
+        "about#how-our-pieces-are-made-our-collections",
+        "about#who-we-are",
+        "solar-bangle#all"
+      ],
+      "followUps": [],
+      "followUpsAnswered": null,
+      "cited": []
+    },
+    {
+      "id": "h9-are-gems-real",
+      "category": "multi_doc",
+      "question": "Are the gems real?",
+      "expect": "answer",
+      "reference": "SOLAR uses red agate, a natural stone, and MARINE uses natural freshwater pearls. LUNAR's crystals are star-cut cubic zirconia, not precious stones.",
+      "answer": "The SOLAR collection features red agate, a natural stone.[1] The MARINE collection includes natural freshwater pearls.[1] The LUNAR collection uses star-cut cubic zirconia crystals, which are not natural gems.[1]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": true,
+      "factFailures": [],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 5,
+        "grounded": true,
+        "focused": true,
+        "freshFollowUps": true,
+        "reason": "The answer accurately states the types of gems used in each collection as per the reference and source."
+      },
+      "pass": true,
+      "latencyMs": 2805,
+      "costUsd": 0.0020528,
+      "tokens": {
+        "input": 4368,
+        "output": 191
+      },
+      "sources": [
+        "materials#all"
+      ],
+      "retrieved": [
+        "materials#all",
+        "lunar-collection#all",
+        "marine-pearl-drop-earrings#all",
+        "solar-collection#all",
+        "solar-earrings#all",
+        "faq#is-your-jewellery-ethically-and-sustainably-sourced"
+      ],
+      "followUps": [
+        "Are the pearls in MARINE collection natural?",
+        "What stones are used in the SOLAR collection?",
+        "Are LUNAR crystals real gems?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Materials and Skin Sensitivity > Materials and Skin Sensitivity",
+          "text": "## Our base metal\nEvery Parure piece starts with 316L stainless steel, often called surgical-grade steel. It's strong, doesn't rust, and contains over 60% recycled content.\n\n## Gold pieces (SOLAR and MARINE)\nOur gold pieces are coated using PVD (physical vapour deposition), which bonds a thin layer of gold-tone coating to the steel. PVD is much harder-wearing than traditional electroplating, so the colour lasts longer and is resistant to tarnishing.\n\n## Silver-tone pieces (LUNAR)\nLUNAR pieces are not plated. They're polished 316L stainless steel in its natural silver tone. Because there's no coating, the colour can't wear off. They are not sterling silver.\n\n## Stones and pearls\n- **SOLAR:** red agate, a natural stone.\n- **MARINE:** freshwater pearls and blue enamel.\n- **LUNAR:** star-cut cubic zirconia crystals.\n\n## Sensitive skin\n316L stainless steel is hypoallergenic and meets the EU Nickel Directive limits for jewellery, so most people with sensitive skin can wear our pieces without irritation. If you have a severe, diagnosed nickel allergy, please email hello@parurelondon.com before ordering and we'll talk you through it."
+        }
+      ]
+    },
+    {
+      "id": "h10-ring-doesnt-fit",
+      "category": "realistic",
+      "question": "Tje ring I bought doesnt fit is this enough",
+      "expect": "answer",
+      "reference": "Yes, you can return it unworn in its original packaging within 30 days of delivery; email hello@parurelondon.com with your order number. SOLAR and MARINE rings are one size (UK O); LUNAR rings come in UK J, L, N and P.",
+      "answer": "Our rings come in specific sizes: SOLAR and MARINE rings are one size, UK size O, while LUNAR rings come in sizes J, L, N, and P.[1][2][3][4][5] If the ring you bought doesn't fit, you can check your size by measuring the inside diameter of a ring that fits you well and comparing it with our size chart.[1] If you need exact measurements or further help with sizing, you can email hello@parurelondon.com.[1]",
+      "answerable": true,
+      "retrievalRecall": 1,
+      "declineCorrect": true,
+      "factsPass": false,
+      "factFailures": [
+        "missing: 30 days",
+        "missing: unworn"
+      ],
+      "citationPrecision": 1,
+      "quoteVerification": 1,
+      "sentenceCoverage": 1,
+      "judge": {
+        "correctness": 3,
+        "grounded": true,
+        "focused": false,
+        "freshFollowUps": true,
+        "reason": "The answer correctly states ring sizes and sizing advice but omits the return policy and does not directly address whether the ring can be returned if it doesn't fit."
+      },
+      "pass": false,
+      "latencyMs": 3695,
+      "costUsd": 0.0019892000000000004,
+      "tokens": {
+        "input": 3497,
+        "output": 369
+      },
+      "sources": [
+        "size-guide#all",
+        "faq#do-you-offer-different-sizes",
+        "solar-ring#all",
+        "marine-tide-ring#all",
+        "lunar-star-ring#all"
+      ],
+      "retrieved": [
+        "size-guide#all",
+        "faq#do-you-offer-different-sizes",
+        "solar-ring#all",
+        "marine-tide-ring#all",
+        "lunar-star-ring#all",
+        "marine-pearl-drop-earrings#all"
+      ],
+      "followUps": [
+        "Can I exchange my ring for a different size?",
+        "How do I measure my ring size at home?",
+        "What if my ring is between sizes?"
+      ],
+      "followUpsAnswered": 3,
+      "cited": [
+        {
+          "title": "Size Guide (2026) > Size Guide (2026)",
+          "text": "## Rings\nSOLAR and MARINE rings come in one size, the average UK size O.\n\nLUNAR rings come in four sizes: UK J, L, N and P.\n\nTo find your size, measure the inside diameter of a ring that already fits you well and compare it with an online ring size chart.\n\n## Bracelets and necklaces\nOur bracelets and necklaces have adjustable clasps with multiple length options. To measure, wrap a soft tape measure or a piece of string where the piece would sit, then measure the length against a ruler.\n\n## Bangles and cuffs\nBangles and cuffs are one size and rigid, so they can't be adjusted. Each product page lists the inner diameter: compare it with a bangle that already fits you. The MARINE wave cuff has an opening at the back so it slips on from the side, but please don't bend it.\n\n## Product measurements\nWhere we have exact measurements, they are listed on the product page. If a measurement you need is not listed, email hello@parurelondon.com and we will help."
+        },
+        {
+          "title": "Frequently Asked Questions > Do you offer different sizes?",
+          "text": "At the moment, due to the small stock sizes of our first launch, all pieces come in one size. We've aimed to make the fit work for as many people as possible, with the bracelet and necklace featuring multiple clasp options for adjustable length. The ring is made in the average UK size O."
+        },
+        {
+          "title": "SOLAR Ring > SOLAR Ring",
+          "text": "**Price:** £45\n\n## Description\nA sculptural sun-ray ring with a red agate centre, designed to be worn as a statement on its own.\n\n## Materials\nEach piece is crafted using PVD gold plating over predominantly recycled stainless steel, made to keep its colour and last. Hypoallergenic and nickel-free, designed for everyday wear.\n\n## Size\nOne size: UK size O."
+        },
+        {
+          "title": "MARINE Tide Ring > MARINE Tide Ring",
+          "text": "**Price:** £45\n\n## Description\nA gold band with a wave of blue enamel running around it.\n\n## Materials\nPVD gold plating over 316L stainless steel. Hypoallergenic.\n\n## Size\nOne size: UK size O."
+        },
+        {
+          "title": "LUNAR Star Ring > LUNAR Star Ring",
+          "text": "**Price:** £40\n\n## Description\nA single star-cut cubic zirconia crystal set on a slim, polished band. Designed to be stacked.\n\n## Materials\nPolished 316L stainless steel in its natural silver tone. Not plated and not sterling silver. Hypoallergenic.\n\n## Sizes\nAvailable in UK sizes J, L, N and P. If you're between sizes, we recommend sizing up.\n\n## Details\n- Band width: 2mm\n- Crystal: 6mm star cut"
+        }
+      ]
+    }
+  ]
+}
